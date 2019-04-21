@@ -16,9 +16,9 @@ declare module '@mapbox/mapbox-gl-native' {
     }
 
     export interface MapSourceResponse {
-        modified: Date | undefined,
-        expires: Date | undefined,
-        etag: string | string[] | undefined,
+        modified?: Date | undefined,
+        expires?: Date | undefined,
+        etag?: string | string[] | undefined,
         data: Buffer,
     }
 

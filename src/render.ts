@@ -20,7 +20,6 @@ let options:mbgl.MapOptions = {
           etag: (res.headers.etag)?res.headers.etag:undefined, 
           data: body
         }
-
         callback(null, response);
       } else {
         callback(new Error(JSON.parse(body).message));
