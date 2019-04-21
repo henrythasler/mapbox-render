@@ -1,0 +1,21 @@
+{
+    "name": "mapbox-render",
+    "version": "0.0.1",
+    "description": "Render PNGs from Mapbox style",
+    "license": "MIT",
+    "scripts": {
+    },
+    "bin": {
+    },
+    "dependencies": {
+        "@mapbox/geo-viewport": "^0.4.0",
+        "@mapbox/mapbox-gl-native": "^4.1.0",
+        "@mapbox/mbtiles": "^0.10.0",
+        "request": "^2.88.0",
+        "sharp": "^0.22.0"
+    },
+    "devDependencies": {
+        "@types/sharp": ""
+    },
+    "repository": "https://github.com/henrythasler/mapbox-render"
+}

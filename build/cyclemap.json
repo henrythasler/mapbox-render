@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "name": "My Cyclemap",
+  "metadata": {},
+  "sources": {
+    "local": {
+      "type": "vector",
+      "tiles": [
+        "http://localhost:8080/maps/local/{z}/{x}/{y}.pbf?debug=true"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#f6f4e7"
+      }
+    },
+    {
+      "id": "landuse-forest",
+      "type": "fill",
+      "source": "local",
+      "source-layer": "landcover",
+      "minzoom": 7,
+      "maxzoom": 24,
+      "filter": ["match", ["get", "subclass"], ["forest", "wood", "scrub"], true, false], 
+      "paint": {
+        "fill-color": "rgba(176, 208, 144, 1)",
+        "fill-outline-color": "rgba(0, 0, 0, 0)"
+      }
+    }
+  ],
+  "id": "cndhwdkjr"
+}
