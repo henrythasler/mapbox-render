@@ -26,6 +26,10 @@ Run application:
 - https://github.com/consbio/mbgl-renderer
 - https://github.com/klokantech/tileserver-gl
 
+## Node/JavaScript references
+
+- https://github.com/airbnb/javascript
+
 ## Typescript References
 
 - https://www.tutorialsteacher.com/typescript
