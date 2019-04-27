@@ -33,3 +33,4 @@ Run application:
 ## Typescript References
 
 - https://www.tutorialsteacher.com/typescript
+- https://blog.bitsrc.io/keep-your-promises-in-typescript-using-async-await-7bdc57041308

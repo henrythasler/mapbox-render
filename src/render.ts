@@ -2,10 +2,13 @@ import * as util from "util";
 import * as fs from "fs";
 import * as mbgl from "@mapbox/mapbox-gl-native";
 import * as sharp from "sharp";
+// import * as fetch from "node-fetch";
+// import fetch from 'node-fetch';
 // import * as path from "path";
-import * as request from "request";
+import * as rp from "request-promise-native";
 
 const asyncReadFile = util.promisify(fs.readFile);
+
 
 // let debug: boolean = true;
 
@@ -86,10 +89,44 @@ enum UrlType {
 
 class MapboxRender {
     protected options: MapboxRenderOptions;
-    protected style: string = "";
+    protected style: string;
+    protected map: mbgl.Map;
+    protected mapOptions: mbgl.MapOptions = {
+        request: this.handleRequest,
+        ratio: 1.0
+    };
 
     constructor(options: MapboxRenderOptions) {
         this.options = options;
+    }
+
+    private async handleRequest(mapSourceRequest: mbgl.MapSourceRequest, callback: (error: Error | null, sourceResponse?: mbgl.MapSourceResponse) => void) {
+        console.log(mapSourceRequest.url);
+        try {
+            let responseData = await rp({
+                url: mapSourceRequest.url,
+                encoding: null,
+                gzip: true,
+                resolveWithFullResponse: true
+            });
+
+            if (responseData.statusCode == 200) {
+                let mapSourceResponse: mbgl.MapSourceResponse = {
+                    modified: (responseData.headers.modified) ? new Date(responseData.headers.modified[0]) : undefined,
+                    expires: (responseData.headers.expires) ? new Date(responseData.headers.expires) : undefined,
+                    etag: (responseData.headers.etag) ? responseData.headers.etag : undefined,
+                    data: responseData.body
+                }
+                console.log(mapSourceResponse);
+                callback(null, mapSourceResponse);
+            }
+            else {
+                callback(new Error(JSON.parse(responseData.body).message));
+            }
+        } catch (error) {
+            console.log("[ERROR] %s", error);
+            callback(error);
+        }
     }
 
     private debug(message: any): void {
@@ -107,40 +144,64 @@ class MapboxRender {
         return UrlType.file
     }
 
-    private wait(delay: number, callback:any) { /* … */ 
+    private wait(delay: number, callback: any) { /* … */
         const id = setInterval(() => {
             // Generate a random number between 0 and 1
             const rand = Math.random();
-        
+
             if (rand > 0.95) {
-              callback(null, 'Congratulations, you have finished waiting.');
-              clearInterval(id);
-            } else if (rand < 0.1) {
-              callback('Could not wait any longer!', null);
-              clearInterval(id);
+                callback(null, 'Congratulations, you have finished waiting.');
+                clearInterval(id);
+            } else if (rand < 0.02) {
+                callback('Could not wait any longer!', null);
+                clearInterval(id);
             } else {
-//              console.log('Waiting ...');
+                //              console.log('Waiting ...');
             }
-          }, Number(delay));
+        }, Number(delay));
     };
     private asyncWait = util.promisify(this.wait);
 
+    private async loadStyle() {
+        // await Promise.all([
+        //     asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
+        //     this.asyncWait(1)
+        // ])
+        try {
+            this.style = await asyncReadFile(this.options.styleUrl, { encoding: "utf-8" });
+            this.map = new mbgl.Map(this.mapOptions);
+            this.map.load(this.style);
+        } catch (error) {
+            console.error(error);
+        }
+
+        // let result:string="";
+        // try {
+        //     result = <string>await this.asyncWait(1);
+        // } catch (error) {
+        //     console.error(error);
+        // }
+    }
+
     render(param: RenderParameters, output: string): void {
+        this.loadStyle().then(() => {
+            console.log("setup done.");
+        });
 
         // Prepare stuff
-        Promise.all([
-            asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
-            this.asyncWait(1)
-        ]).then((data:any[]) => {
-            let message:string;
-            [this.style, message] = data
-            this.style = data[0]
-            this.debug(this.style[0])
-            this.debug(message)
-        }).catch((err:Error) => {
-//            this.error(err)
-            console.error(`[Error]: ${err}`)
-        });
+        //         Promise.all([
+        //             asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
+        //             this.asyncWait(1)
+        //         ]).then((data:any[]) => {
+        //             let message:string;
+        //             [this.style, message] = data
+        //             this.style = data[0]
+        //             this.debug(this.style[0])
+        //             this.debug(message)
+        //         }).catch((err:Error) => {
+        // //            this.error(err)
+        //             console.error(`[Error]: ${err}`)
+        //         });
     }
 }
 
