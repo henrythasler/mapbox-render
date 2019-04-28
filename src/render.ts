@@ -68,7 +68,8 @@ const asyncReadFile = util.promisify(fs.readFile);
 interface MapboxRenderOptions {
     styleUrl: string,
     accessToken?: string,
-    debug?: boolean
+    debug?: boolean,
+    ratio?: number
 }
 
 interface RenderParameters {
@@ -82,6 +83,7 @@ enum UrlType {
     unknown = 0,
     mapbox,
     mapboxTile,
+    mapboxFont,
     file,
     http
 }
@@ -91,12 +93,53 @@ class MapboxRender {
     protected options: MapboxRenderOptions;
     protected style: string;
     protected map: mbgl.Map;
-    //    protected asyncMapRender: Promise<Buffer>;
+    // protected asyncRender: any;
+
+    private handleRequest = async (mapSourceRequest: mbgl.MapSourceRequest, callback: (error: Error | null, sourceResponse?: mbgl.MapSourceResponse) => void) => {
+
+        let resolvedUrl: string = this.resolveUrl(mapSourceRequest.url);
+        this.debug(`${mapSourceRequest.kind} ${mapSourceRequest.url}\n => ${resolvedUrl}`);
+
+        if (resolvedUrl.length === 0) {
+            callback(new Error(`Unknown UrlType ${mapSourceRequest.url}`));
+        }
+        else {
+            try {
+                let responseData = await requestPromise({
+                    url: resolvedUrl,
+                    encoding: null,
+                    gzip: true,
+                    resolveWithFullResponse: true
+                });
+
+                if (responseData.statusCode === 200) {
+                    let mapSourceResponse: mbgl.MapSourceResponse = {
+                        modified: (responseData.headers.modified) ? new Date(responseData.headers.modified[0]) : undefined,
+                        expires: (responseData.headers.expires) ? new Date(responseData.headers.expires) : undefined,
+                        etag: (responseData.headers.etag) ? responseData.headers.etag : undefined,
+                        data: responseData.body
+                    }
+                    callback(null, mapSourceResponse);
+                }
+                else {
+                    callback(new Error(`${responseData.statusCode} - ${responseData.statusMessage}: ${responseData.request.href}`));
+                }
+            } catch (err) {
+                callback(new Error(`${err.response.statusCode} - ${err.response.statusMessage}: ${err.response.request.href}`));
+            }
+        }
+    }
+
+    protected mapOptions: mbgl.MapOptions = {
+        request: this.handleRequest,
+        ratio: 1.0
+    };
 
     constructor(options: MapboxRenderOptions) {
         this.options = options;
+        this.mapOptions = { ...this.mapOptions, ...{ ratio: this.options.ratio || 1.0 } }
         this.map = new mbgl.Map(this.mapOptions);
-        //        this.asyncMapRender = util.promisify(this.map.render)
+        // this.asyncRender = util.promisify(this.map.render);
 
     }
 
@@ -106,18 +149,18 @@ class MapboxRender {
         }
     }
 
-    private error(errorMsg: any): never {
-        throw new Error(errorMsg);
+    private error(error: Error): never {
+        throw error;
     }
 
     private resolveUrl(url: string): string {
         // adapt/modify url if needed
         let urlType = this.getUrlType(url);
-        this.debug(`${url}  ${urlType}`);
 
         switch (urlType) {
             case UrlType.mapbox:
             case UrlType.mapboxTile:
+            case UrlType.mapboxFont:
                 let urlObject = new URL(url, true);
                 // this.debug(urlObject);
 
@@ -125,6 +168,10 @@ class MapboxRender {
                     // combine given query string with access_token and secury-property. Given properties are preserved
                     urlObject.set("query", { ...{ access_token: this.options.accessToken }, ...urlObject.query });
                     urlObject.set("pathname", `/v4${urlObject.pathname}`);
+                }
+                else if (urlType === UrlType.mapboxFont) {
+                    urlObject.set("query", { ...{ access_token: this.options.accessToken }, ...urlObject.query });
+                    urlObject.set("pathname", `/fonts/v1${urlObject.pathname}`);
                 }
                 else {
                     // combine given query string with access_token and secury-property. Given properties are preserved
@@ -144,54 +191,17 @@ class MapboxRender {
         return url;
     }
 
-    private handleRequest = async (mapSourceRequest: mbgl.MapSourceRequest,
-        callback: (error: Error | null, sourceResponse?: mbgl.MapSourceResponse) => void) => {
 
-        let resolvedUrl: string = this.resolveUrl(mapSourceRequest.url);
 
-        if (resolvedUrl.length === 0) {
-            callback(new Error("Unknown UrlType"));
-        }
-        else {
-            console.log(`Using: ${resolvedUrl}`);
-            try {
-                let responseData = await requestPromise({
-                    url: resolvedUrl,
-                    encoding: null,
-                    gzip: true,
-                    resolveWithFullResponse: true
-                });
-
-                if (responseData.statusCode == 200) {
-                    let mapSourceResponse: mbgl.MapSourceResponse = {
-                        modified: (responseData.headers.modified) ? new Date(responseData.headers.modified[0]) : undefined,
-                        expires: (responseData.headers.expires) ? new Date(responseData.headers.expires) : undefined,
-                        etag: (responseData.headers.etag) ? responseData.headers.etag : undefined,
-                        data: responseData.body
-                    }
-                    // console.log(mapSourceResponse);
-                    callback(null, mapSourceResponse);
-                }
-                else {
-                    callback(new Error(JSON.parse(responseData.body).message));
-                }
-            } catch (error) {
-                console.log("[ERROR] %s", error);
-                callback(error);
-            }
-        }
-    }
-
-    protected mapOptions: mbgl.MapOptions = {
-        request: this.handleRequest,
-        ratio: 1.0
-    };
 
 
     private getUrlType(url: string): UrlType {
         // FIXME: Use a map with regex or something
         if (url.startsWith("mapbox://tiles")) {
             return UrlType.mapboxTile
+        }
+        else if (url.startsWith("mapbox://fonts")) {
+            return UrlType.mapboxFont;
         }
         else if (url.startsWith("mapbox://")) {
             return UrlType.mapbox;
@@ -221,11 +231,13 @@ class MapboxRender {
     };
     private asyncWait = util.promisify(this.wait);
 
-    async loadStyle() {
+    async loadStyle(styleUrl?: string) {
         // await Promise.all([
         //     asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
         //     this.asyncWait(1)
         // ])
+
+        this.options.styleUrl = styleUrl ? styleUrl : this.options.styleUrl;
         try {
             this.style = await asyncReadFile(this.options.styleUrl, { encoding: "utf-8" });
             this.map.load(this.style);
@@ -241,13 +253,31 @@ class MapboxRender {
         // }
     }
 
+    async render(param: RenderParameters, outputFile: string) {
+        // FIXME: find out why that does not work
+        //        var asyncRender = util.promisify(this.map.render);
+        // this.asyncRender(param)
+        //     .then((buffer:any) => {
+        //         this.map.release();
+        //         var image = sharp(buffer, {
+        //             raw: {
+        //                 width: param.width,
+        //                 height: param.height,
+        //                 channels: 4
+        //             }
+        //         });
+        //         // Convert raw image buffer to PNG
+        //         image.toFile('data/image.png', function (err) {
+        //             if (err) throw err;
+        //         });
+        //     })
+        //     .catch((err:Error) => {
+        //         this.debug(err)
+        //     });
 
-    render(param: RenderParameters, output: string) {
         this.map.render(param, (err, buffer) => {
-            if (err) throw err;
-
+            if (err) this.error(err);
             this.map.release();
-
             var image = sharp(buffer, {
                 raw: {
                     width: param.width,
@@ -255,28 +285,26 @@ class MapboxRender {
                     channels: 4
                 }
             });
-
             // Convert raw image buffer to PNG
-            image.toFile('data/image.png', function (err) {
+            image.toFile(outputFile, function (err) {
                 if (err) throw err;
             });
         });
-        // try {
-        //     let buffer = await this.asyncMapRender({ zoom: 11, width: 1024, height: 512, center: [12.5, 47.9] })
-        //     console.log(buffer);
-        //     // this.map.release();
-        //     // var image = sharp(buffer, {
-        //     //     raw: {
-        //     //         width: 1024,
-        //     //         height: 512,
-        //     //         channels: 4
-        //     //     }
-        //     // });
-        //     // // Convert raw image buffer to PNG
-        //     // image.toFile('data/image.png', function (err) {
-        //     //     if (err) throw err;
-        //     // });
 
+        // try {
+        //     let buffer = await this.asyncRender(param)
+        //     this.map.release();
+        //     var image = sharp(buffer, {
+        //         raw: {
+        //             width: param.width,
+        //             height: param.height,
+        //             channels: 4
+        //         }
+        //     });
+        //     // Convert raw image buffer to PNG
+        //     image.toFile('data/image.png', function (err) {
+        //         if (err) throw err;
+        //     });
         // } catch (error) {
         //     console.error(error);
         // }
@@ -305,28 +333,29 @@ class MapboxRender {
 
 // main()
 let mapboxRenderOptions: MapboxRenderOptions = {
-    styleUrl: "data/cyclemap.json",  // see https://en.wikipedia.org/wiki/URL; https://url.spec.whatwg.org/
+    styleUrl: "data/cyclemap-simple.json",  // see https://en.wikipedia.org/wiki/URL; https://url.spec.whatwg.org/
     accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg",
-    debug: true
+    debug: true,
+    ratio: 2
 }
 
 let mbr = new MapboxRender(mapboxRenderOptions);
 
 let renderParam: RenderParameters = {
-    center: [12.6584, 47.7589],
-    zoom: 12,
-    width: 1025,
-    height: 512
+    center: [12.75491, 47.75418],
+    zoom: 14,
+    width: 1280,
+    height: 768
 }
 
-mbr.loadStyle().then(() => {
-    console.log("setup done.");
-    mbr.render(renderParam, "data/image.png");
-    // mbr.render(renderParam, "data/image.png").then(() => {
-    //     console.log("done")
-    // }).catch((err: Error) => {
-    //     console.error(err)
-    // });
-});
+mbr.loadStyle("data/cyclemap-simple.json")
+    .then(() => {
+        mbr.render(renderParam, "data/image.png")
+            .then(() => {
+                console.log("done")
+            }).catch((err: Error) => {
+                console.error(err)
+            });
+    });
 
 
