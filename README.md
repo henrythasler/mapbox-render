@@ -30,9 +30,11 @@ Run application:
 
 - https://github.com/airbnb/javascript
 - https://www.stevefenton.co.uk/2015/04/TypeScript-Scope-Responsibility/
+- http://usejsdoc.org/index.html
 
 ## Typescript References
 
 - https://www.tutorialsteacher.com/typescript
 - https://blog.bitsrc.io/keep-your-promises-in-typescript-using-async-await-7bdc57041308
 - https://tutorialedge.net/typescript/async-await-in-typescript-tutorial/
+- https://code.visualstudio.com/docs/typescript/typescript-debugging

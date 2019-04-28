@@ -9,61 +9,6 @@ import { resolve } from "dns";
 
 const asyncReadFile = util.promisify(fs.readFile);
 
-// let debug: boolean = true;
-
-// let options: mbgl.MapOptions = {
-//     request: function (mapSourceRequest, callback) {
-//         if (debug) {
-//             console.log("url=`" + mapSourceRequest.url + "` kind=" + mapSourceRequest.kind)
-//         }
-
-//         request({
-//             url: mapSourceRequest.url,
-//             encoding: null,
-//             gzip: true
-//         }, function (err, res, body) {
-//             if (err) {
-//                 callback(err);
-//             } else if (res.statusCode == 200) {
-//                 let response: mbgl.MapSourceResponse = {
-//                     modified: (res.headers.modified) ? new Date(res.headers.modified[0]) : undefined,
-//                     expires: (res.headers.expires) ? new Date(res.headers.expires) : undefined,
-//                     etag: (res.headers.etag) ? res.headers.etag : undefined,
-//                     data: body
-//                 }
-//                 callback(null, response);
-//             } else {
-//                 callback(new Error(JSON.parse(body).message));
-//             }
-//         });
-//     },
-//     ratio: 1.0
-// };
-
-// var map = new mbgl.Map(options);
-
-// import * as style from '../data/cyclemap.json';
-// map.load(<any>style);
-
-// map.render({ zoom: 11, width: 1024, height: 512, center: [12.5, 47.9] }, function (err, buffer) {
-//     if (err) throw err;
-
-//     map.release();
-
-//     var image = sharp(buffer, {
-//         raw: {
-//             width: 1024,
-//             height: 512,
-//             channels: 4
-//         }
-//     });
-
-//     // Convert raw image buffer to PNG
-//     image.toFile('data/image.png', function (err) {
-//         if (err) throw err;
-//     });
-// });
-
 
 interface MapboxRenderOptions {
     styleUrl: string,
@@ -88,7 +33,7 @@ enum UrlType {
     http
 }
 
-
+/** Render mapbox-gl-styles */
 class MapboxRender {
     protected options: MapboxRenderOptions;
     protected style: string;
@@ -135,6 +80,11 @@ class MapboxRender {
         ratio: 1.0
     };
 
+    /**
+     * Render mapbox style
+     * @constructor
+     * @param options General options used to create the instance
+     */
     constructor(options: MapboxRenderOptions) {
         this.options = options;
         this.mapOptions = { ...this.mapOptions, ...{ ratio: this.options.ratio || 1.0 } }
@@ -143,16 +93,31 @@ class MapboxRender {
 
     }
 
-    private debug(message: any): void {
+    /**
+    * Print a debug message to console if this.options.debug=true
+    * @param message Message to print
+    */
+    private debug(message: string): void {
         if (this.options.debug) {
             console.log(message);
         }
     }
 
+    /**
+    * Panic mode
+    * @param error Error that caused the panic
+    */
     private error(error: Error): never {
         throw error;
     }
 
+    /**
+    * URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual URL (like `mapbox://mapbox.terrain-rgb`) before we can request the data.
+    * Also, an API-Key (`access_token`) will be added to allow downloading mapbox ressources.
+    * If you get 404-errors you need to start looking here...
+    * @param url The URL that needs resolving
+    * @return Resolved URL that can be fed to `request`.
+    */
     private resolveUrl(url: string): string {
         // adapt/modify url if needed
         let urlType = this.getUrlType(url);
@@ -253,7 +218,7 @@ class MapboxRender {
         // }
     }
 
-    async render(param: RenderParameters, outputFile: string) {
+    async render(param: RenderParameters, outputFile: string): Promise<boolean|Error> {
         // FIXME: find out why that does not work
         //        var asyncRender = util.promisify(this.map.render);
         // this.asyncRender(param)
@@ -275,21 +240,30 @@ class MapboxRender {
         //         this.debug(err)
         //     });
 
-        this.map.render(param, (err, buffer) => {
-            if (err) this.error(err);
-            this.map.release();
-            var image = sharp(buffer, {
-                raw: {
-                    width: param.width,
-                    height: param.height,
-                    channels: 4
+        return new Promise<boolean>((resolve, reject) => {
+            this.map.render(param, (err, buffer) => {
+                if (err) {
+                    reject(err);
                 }
-            });
-            // Convert raw image buffer to PNG
-            image.toFile(outputFile, function (err) {
-                if (err) throw err;
+                this.map.release();
+                var image = sharp(buffer, {
+                    raw: {
+                        width: param.width,
+                        height: param.height,
+                        channels: 4
+                    }
+                });
+                // Convert raw image buffer to PNG
+                image.toFile(outputFile, function (err) {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(true);
+                });
+
             });
         });
+
 
         // try {
         //     let buffer = await this.asyncRender(param)
