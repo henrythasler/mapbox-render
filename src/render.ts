@@ -5,19 +5,18 @@ import * as sharp from "sharp";
 // import * as path from "path";
 import * as requestPromise from "request-promise-native";
 import * as URL from "url-parse";
-import { resolve } from "dns";
 
 const asyncReadFile = util.promisify(fs.readFile);
 
 
-interface MapboxRenderOptions {
+export interface MapboxRenderOptions {
     styleUrl: string,
     accessToken?: string,
     debug?: boolean,
     ratio?: number
 }
 
-interface RenderParameters {
+export interface RenderParameters {
     center: number[],
     zoom: number,
     width: number,
@@ -34,7 +33,7 @@ enum UrlType {
 }
 
 /** Render mapbox-gl-styles */
-class MapboxRender {
+export class MapboxRender {
     protected options: MapboxRenderOptions;
     protected style: string;
     protected map: mbgl.Map;
@@ -50,6 +49,7 @@ class MapboxRender {
         }
         else {
             try {
+                console.log(`READING: ${resolvedUrl}`)
                 let responseData = await requestPromise({
                     url: resolvedUrl,
                     encoding: null,
@@ -70,7 +70,12 @@ class MapboxRender {
                     callback(new Error(`${responseData.statusCode} - ${responseData.statusMessage}: ${responseData.request.href}`));
                 }
             } catch (err) {
-                callback(new Error(`${err.response.statusCode} - ${err.response.statusMessage}: ${err.response.request.href}`));
+                if (err.cause) {
+                    callback(new Error(`${err.cause.syscall} - ${err.options.url}: ${err.cause.code}`));
+                }
+                else {
+                    callback(new Error(`${err.response.statusCode} - ${err.response.statusMessage}: ${err.response.request.href}`)); 
+                }
             }
         }
     }
@@ -218,7 +223,7 @@ class MapboxRender {
         // }
     }
 
-    async render(param: RenderParameters, outputFile: string): Promise<boolean|Error> {
+    async render(param: RenderParameters, outputFile: string): Promise<boolean | Error> {
         // FIXME: find out why that does not work
         //        var asyncRender = util.promisify(this.map.render);
         // this.asyncRender(param)
@@ -304,32 +309,3 @@ class MapboxRender {
         //         });
     }
 }
-
-// main()
-let mapboxRenderOptions: MapboxRenderOptions = {
-    styleUrl: "data/cyclemap-simple.json",  // see https://en.wikipedia.org/wiki/URL; https://url.spec.whatwg.org/
-    accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg",
-    debug: true,
-    ratio: 2
-}
-
-let mbr = new MapboxRender(mapboxRenderOptions);
-
-let renderParam: RenderParameters = {
-    center: [12.75491, 47.75418],
-    zoom: 14,
-    width: 1280,
-    height: 768
-}
-
-mbr.loadStyle("data/cyclemap-simple.json")
-    .then(() => {
-        mbr.render(renderParam, "data/image.png")
-            .then(() => {
-                console.log("done")
-            }).catch((err: Error) => {
-                console.error(err)
-            });
-    });
-
-

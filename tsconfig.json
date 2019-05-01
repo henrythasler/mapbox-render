@@ -1,12 +1,16 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
-        "outDir": "./build",
+        "outDir": "dist",
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "declaration": true
     },
+    "files": [
+        "src/render.ts",
+    ],
     "include": [
-    "./src/**/*", "@types/**/*.d.ts"
-]}
+        "src/types/**/*",
+    ]
+}

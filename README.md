@@ -10,7 +10,7 @@ The main purpose is to render raster tiles for offline/mobile use from my Mapbox
 
 ## Typescript interface for mapbox-gl-native
 
-There is none... So I created one on my own based on the information available via Mapbox's github repo.
+There is none... So I created one on my own, based on the information available via Mapbox's github repo.
 
 ## Build & Run application
 
@@ -19,6 +19,10 @@ Enable autobuild:
 
 Run application:
 `nodejs build/render.js`
+
+## Type generation
+
+`nodejs node_modules/dts-gen/bin/lib/run.js`
 
 ## References
 
@@ -34,7 +38,12 @@ Run application:
 
 ## Typescript References
 
+- https://github.com/Microsoft/TypeScript-Node-Starter
 - https://www.tutorialsteacher.com/typescript
 - https://blog.bitsrc.io/keep-your-promises-in-typescript-using-async-await-7bdc57041308
 - https://tutorialedge.net/typescript/async-await-in-typescript-tutorial/
 - https://code.visualstudio.com/docs/typescript/typescript-debugging
+
+## Testing
+
+- https://mochajs.org/#getting-started

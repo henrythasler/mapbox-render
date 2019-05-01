@@ -1,23 +1,32 @@
 {
-    "name": "mapbox-render",
-    "version": "0.0.1",
-    "description": "Render PNGs from Mapbox style",
-    "license": "MIT",
-    "scripts": {
-    },
-    "bin": {
-    },
-    "dependencies": {
-        "@mapbox/mapbox-gl-native": "^4.1.0",
-        "request": "^2.88.0",
-        "request-promise-native": "^1.0.7",
-        "url-parse": "^1.4.3",
-        "sharp": "^0.22.0"
-    },
-    "devDependencies": {
-        "@types/sharp": "^0.22.0",
-        "@types/url-parse": "^1.4.3",
-        "@types/request-promise-native": "^1.0.7"
-    },
-    "repository": "https://github.com/henrythasler/mapbox-render"
+  "name": "mapbox-render",
+  "version": "0.0.1",
+  "description": "Render PNGs from Mapbox style",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types" : "dist/index.d.ts",  
+  "scripts": {
+    "start": "npm run render",
+    "render": "node dist/render.js",
+    "static-image": "node example/static-image.js",
+    "test": "node node_modules/jest/bin/jest.js --forceExit --coverage --verbose"
+  },
+  "bin": {},
+  "dependencies": {
+    "@mapbox/mapbox-gl-native": "^4.1.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "url-parse": "^1.4.3",
+    "sharp": "^0.22.0"
+  },
+  "devDependencies": {
+    "@types/request-promise-native": "^1.0.7",
+    "@types/sharp": "^0.22.0",
+    "@types/url-parse": "^1.4.3",
+    "dts-gen": "^0.5.7",
+    "jest": "^24.7.1",
+    "jsdoc": "^3.5.5",
+    "ts-jest": "^24.0.2"
+  },
+  "repository": "https://github.com/henrythasler/mapbox-render"
 }

@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "sourceMap": true,
+    },
+    "include": [
+        "src/types/**/*",
+        "example/**/*",
+    ]
+}
