@@ -50,7 +50,6 @@ var util = require("util");
 var fs = require("fs");
 var mbgl = require("@mapbox/mapbox-gl-native");
 var sharp = require("sharp");
-// import * as path from "path";
 var requestPromise = require("request-promise-native");
 var URL = require("url-parse");
 var asyncReadFile = util.promisify(fs.readFile);
@@ -72,27 +71,32 @@ var MapboxRender = /** @class */ (function () {
      */
     function MapboxRender(options) {
         var _this = this;
+        this.style = "";
+        this.originShift = 2 * Math.PI * 6378137 / 2.0;
         // protected asyncRender: any;
         this.handleRequest = function (mapSourceRequest, callback) { return __awaiter(_this, void 0, void 0, function () {
-            var resolvedUrl, responseData, mapSourceResponse, err_1;
+            var resolvedUrl, responseData, mapSourceResponse, err_1, data, mapSourceResponse, err_2, mapSourceResponse;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         resolvedUrl = this.resolveUrl(mapSourceRequest.url);
-                        this.debug(mapSourceRequest.kind + " " + mapSourceRequest.url + "\n => " + resolvedUrl);
-                        if (!(resolvedUrl.length === 0)) return [3 /*break*/, 1];
+                        this.debug(mapSourceRequest.kind + " " + mapSourceRequest.url + "\n => " + resolvedUrl.url);
+                        if (!(resolvedUrl.url.length === 0)) return [3 /*break*/, 1];
                         callback(new Error("Unknown UrlType " + mapSourceRequest.url));
-                        return [3 /*break*/, 4];
+                        return [3 /*break*/, 10];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        console.log("READING: " + resolvedUrl);
+                        if (!(resolvedUrl.type === UrlType.http)) return [3 /*break*/, 6];
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        this.debug("READING: " + resolvedUrl);
                         return [4 /*yield*/, requestPromise({
-                                url: resolvedUrl,
+                                url: resolvedUrl.url,
                                 encoding: null,
                                 gzip: true,
                                 resolveWithFullResponse: true
                             })];
-                    case 2:
+                    case 3:
                         responseData = _a.sent();
                         if (responseData.statusCode === 200) {
                             mapSourceResponse = {
@@ -106,8 +110,8 @@ var MapboxRender = /** @class */ (function () {
                         else {
                             callback(new Error(responseData.statusCode + " - " + responseData.statusMessage + ": " + responseData.request.href));
                         }
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 5];
+                    case 4:
                         err_1 = _a.sent();
                         if (err_1.cause) {
                             callback(new Error(err_1.cause.syscall + " - " + err_1.options.url + ": " + err_1.cause.code));
@@ -115,8 +119,35 @@ var MapboxRender = /** @class */ (function () {
                         else {
                             callback(new Error(err_1.response.statusCode + " - " + err_1.response.statusMessage + ": " + err_1.response.request.href));
                         }
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 10];
+                    case 6:
+                        if (!(resolvedUrl.type === UrlType.file)) return [3 /*break*/, 10];
+                        _a.label = 7;
+                    case 7:
+                        _a.trys.push([7, 9, , 10]);
+                        return [4 /*yield*/, asyncReadFile(resolvedUrl.url)];
+                    case 8:
+                        data = _a.sent();
+                        mapSourceResponse = {
+                            modified: undefined,
+                            expires: undefined,
+                            etag: undefined,
+                            data: data
+                        };
+                        callback(null, mapSourceResponse);
+                        return [3 /*break*/, 10];
+                    case 9:
+                        err_2 = _a.sent();
+                        mapSourceResponse = {
+                            modified: undefined,
+                            expires: undefined,
+                            etag: undefined,
+                            data: new Buffer("")
+                        };
+                        callback(null, mapSourceResponse);
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
                 }
             });
         }); };
@@ -155,19 +186,19 @@ var MapboxRender = /** @class */ (function () {
     */
     MapboxRender.prototype.resolveUrl = function (url) {
         // adapt/modify url if needed
-        var urlType = this.getUrlType(url);
-        switch (urlType) {
+        var resolvedUrl = { type: this.getUrlType(url), url: url };
+        switch (resolvedUrl.type) {
             case UrlType.mapbox:
             case UrlType.mapboxTile:
             case UrlType.mapboxFont:
                 var urlObject = new URL(url, true);
                 // this.debug(urlObject);
-                if (urlType === UrlType.mapboxTile) {
+                if (resolvedUrl.type === UrlType.mapboxTile) {
                     // combine given query string with access_token and secury-property. Given properties are preserved
                     urlObject.set("query", __assign({ access_token: this.options.accessToken }, urlObject.query));
                     urlObject.set("pathname", "/v4" + urlObject.pathname);
                 }
-                else if (urlType === UrlType.mapboxFont) {
+                else if (resolvedUrl.type === UrlType.mapboxFont) {
                     urlObject.set("query", __assign({ access_token: this.options.accessToken }, urlObject.query));
                     urlObject.set("pathname", "/fonts/v1" + urlObject.pathname);
                 }
@@ -178,15 +209,55 @@ var MapboxRender = /** @class */ (function () {
                 }
                 urlObject.set("protocol", "https");
                 urlObject.set("host", "api.mapbox.com");
-                return urlObject.toString();
+                resolvedUrl.url = urlObject.toString();
             case UrlType.http:
-                // resolvedUrl is already fine. Do nothing
+                break;
+            case UrlType.file:
+                resolvedUrl.url = resolvedUrl.url.split("file://")[1];
                 break;
             default:
-                this.debug("Unknown UrlType: " + urlType);
-                return "";
+                break;
         }
-        return url;
+        return resolvedUrl;
+    };
+    /** Converts XY point from Pseudo-Mercator (https://epsg.io/3857) to WGS84 (https://epsg.io/4326) */
+    MapboxRender.prototype.getWGS84FromMercator = function (pos) {
+        var lon = (pos.x / this.originShift) * 180.0;
+        var lat = (pos.y / this.originShift) * 180.0;
+        lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
+        return { lng: lon, lat: lat };
+    };
+    /** Converts pixel coordinates (Origin is top-left) in given zoom level of pyramid to EPSG:900913 */
+    MapboxRender.prototype.getMercatorFromPixels = function (pos, zoom, tileSize) {
+        if (tileSize === void 0) { tileSize = 256; }
+        // zoom = Math.max(0, zoom + 1 - tileSize / 256)
+        var res = 2 * Math.PI * 6378137 / tileSize / Math.pow(2, zoom);
+        return { x: pos.x * res - this.originShift, y: this.originShift - pos.y * res };
+    };
+    /** Returns bounds of the given tile in Pseudo-Mercator (https://epsg.io/3857) coordinates */
+    MapboxRender.prototype.getMercatorTileBounds = function (tile, zoom, tileSize) {
+        if (tileSize === void 0) { tileSize = 256; }
+        var leftbottom = this.getMercatorFromPixels({ x: tile.x * tileSize, y: (tile.y + 1) * tileSize }, zoom, tileSize);
+        var righttop = this.getMercatorFromPixels({ x: (tile.x + 1) * tileSize, y: tile.y * tileSize }, zoom, tileSize);
+        return ({ leftbottom: leftbottom, righttop: righttop });
+    };
+    /** Returns bounds of the given tile in WGS84 (https://epsg.io/4326) coordinates */
+    MapboxRender.prototype.getWGS84TileBounds = function (tile, zoom, tileSize) {
+        if (tileSize === void 0) { tileSize = 256; }
+        var bounds = this.getMercatorTileBounds(tile, zoom, tileSize);
+        return {
+            leftbottom: this.getWGS84FromMercator(bounds.leftbottom),
+            righttop: this.getWGS84FromMercator(bounds.righttop)
+        };
+    };
+    /** Returns center of the given tile in WGS84 (https://epsg.io/4326) coordinates */
+    MapboxRender.prototype.getWGS84TileCenter = function (tile, zoom, tileSize) {
+        if (tileSize === void 0) { tileSize = 256; }
+        var bounds = this.getWGS84TileBounds(tile, zoom, tileSize);
+        return {
+            lng: (bounds.righttop.lng + bounds.leftbottom.lng) / 2,
+            lat: (bounds.righttop.lat + bounds.leftbottom.lat) / 2
+        };
     };
     MapboxRender.prototype.getUrlType = function (url) {
         // FIXME: Use a map with regex or something
@@ -201,6 +272,9 @@ var MapboxRender = /** @class */ (function () {
         }
         else if (url.startsWith('http://')) {
             return UrlType.http;
+        }
+        else if (url.startsWith('file://')) {
+            return UrlType.file;
         }
         return UrlType.unknown;
     };
@@ -244,7 +318,7 @@ var MapboxRender = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         error_1 = _b.sent();
-                        console.error(error_1);
+                        this.error(error_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }

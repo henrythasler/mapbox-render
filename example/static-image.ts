@@ -16,7 +16,7 @@ let renderParam: render.RenderParameters = {
     height: 768
 }
 
-mbr.loadStyle("data/cyclemap-simple.json")
+mbr.loadStyle("data/cyclemap-simple2.json")
     .then(() => {
         mbr.render(renderParam, "example/image.png")
             .then(() => {

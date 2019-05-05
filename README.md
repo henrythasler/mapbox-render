@@ -24,17 +24,19 @@ Run application:
 
 `nodejs node_modules/dts-gen/bin/lib/run.js`
 
-## References
+## Mapbox References
 
 - https://github.com/mapbox/mapbox-gl-native/tree/master/platform/node
 - https://github.com/consbio/mbgl-renderer
 - https://github.com/klokantech/tileserver-gl
 
-## Node/JavaScript references
+## NodeJs/JavaScript References
 
 - https://github.com/airbnb/javascript
 - https://www.stevefenton.co.uk/2015/04/TypeScript-Scope-Responsibility/
 - http://usejsdoc.org/index.html
+- https://www.twilio.com/blog/2017/08/http-requests-in-node-js.html
+- https://stackify.com/node-js-error-handling/
 
 ## Typescript References
 
@@ -44,6 +46,12 @@ Run application:
 - https://tutorialedge.net/typescript/async-await-in-typescript-tutorial/
 - https://code.visualstudio.com/docs/typescript/typescript-debugging
 
-## Testing
+## Testing References
 
+- https://journal.artfuldev.com/unit-testing-node-applications-with-typescript-using-mocha-and-chai-384ef05f32b2
 - https://mochajs.org/#getting-started
+
+## Geospatial References
+
+- https://github.com/sacridini/Awesome-Geospatial
+- https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/

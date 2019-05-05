@@ -1,9 +1,7 @@
 {
     "compilerOptions": {
         "outDir": "dist",
-        "noImplicitAny": true,
-        "noImplicitThis": true,
-        "strictNullChecks": true,
+        "strict": true,
         "sourceMap": true,
         "declaration": true
     },
@@ -12,5 +10,8 @@
     ],
     "include": [
         "src/types/**/*",
+    ],
+    "exclude": [
+        "node_modules/@types/jest/**/*"
     ]
 }
