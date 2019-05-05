@@ -11,6 +11,8 @@ export interface RenderParameters {
     zoom: number;
     width: number;
     height: number;
+    bearing?: number;
+    pitch?: number;
 }
 export interface WGS84 {
     lng: number;
@@ -56,12 +58,17 @@ export declare class MapboxRender {
     * @param error Error that caused the panic
     */
     private error;
+    /** Evaluate type of given url
+     * @param url URL to evaluate
+     * @return Protocol that is defined by the URL
+    */
+    private getUrlType;
     /**
     * URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual URL (like `mapbox://mapbox.terrain-rgb`) before we can request the data.
     * Also, an API-Key (`access_token`) will be added to allow downloading mapbox ressources.
     * If you get 404-errors you need to start looking here...
     * @param url The URL that needs resolving
-    * @return Resolved URL that can be fed to `request`.
+    * @return ResolvedUrl-Object that can be used in `request`.
     */
     private resolveUrl;
     /** Converts XY point from Pseudo-Mercator (https://epsg.io/3857) to WGS84 (https://epsg.io/4326) */
@@ -74,9 +81,9 @@ export declare class MapboxRender {
     getWGS84TileBounds(tile: Vector, zoom: number, tileSize?: number): WGS84BoundingBox;
     /** Returns center of the given tile in WGS84 (https://epsg.io/4326) coordinates */
     getWGS84TileCenter(tile: Vector, zoom: number, tileSize?: number): WGS84;
-    private getUrlType;
-    private wait;
-    private asyncWait;
+    /** Set up mapbox-library with a mapbox-style
+     * @param styleUrl
+     */
     loadStyle(styleUrl?: string): Promise<void>;
     render(param: RenderParameters, outputFile: string): Promise<boolean | Error>;
 }

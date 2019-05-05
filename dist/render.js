@@ -80,24 +80,27 @@ var MapboxRender = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         resolvedUrl = this.resolveUrl(mapSourceRequest.url);
-                        this.debug(mapSourceRequest.kind + " " + mapSourceRequest.url + "\n => " + resolvedUrl.url);
+                        this.debug(mapSourceRequest.kind + " " + mapSourceRequest.url + "\n => " + resolvedUrl.type + " " + resolvedUrl.url);
                         if (!(resolvedUrl.url.length === 0)) return [3 /*break*/, 1];
+                        this.debug("Unknown URL: " + mapSourceRequest.url);
                         callback(new Error("Unknown UrlType " + mapSourceRequest.url));
-                        return [3 /*break*/, 10];
+                        return [3 /*break*/, 12];
                     case 1:
                         if (!(resolvedUrl.type === UrlType.http)) return [3 /*break*/, 6];
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 4, , 5]);
-                        this.debug("READING: " + resolvedUrl);
+                        this.debug("READING: " + resolvedUrl.url);
                         return [4 /*yield*/, requestPromise({
                                 url: resolvedUrl.url,
                                 encoding: null,
                                 gzip: true,
-                                resolveWithFullResponse: true
+                                resolveWithFullResponse: true,
+                                timeout: 5000
                             })];
                     case 3:
                         responseData = _a.sent();
+                        this.debug("DONE READING: " + resolvedUrl.url);
                         if (responseData.statusCode === 200) {
                             mapSourceResponse = {
                                 modified: (responseData.headers.modified) ? new Date(responseData.headers.modified[0]) : undefined,
@@ -113,6 +116,7 @@ var MapboxRender = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 4:
                         err_1 = _a.sent();
+                        this.debug("ERROR READING: " + resolvedUrl.url);
                         if (err_1.cause) {
                             callback(new Error(err_1.cause.syscall + " - " + err_1.options.url + ": " + err_1.cause.code));
                         }
@@ -120,9 +124,9 @@ var MapboxRender = /** @class */ (function () {
                             callback(new Error(err_1.response.statusCode + " - " + err_1.response.statusMessage + ": " + err_1.response.request.href));
                         }
                         return [3 /*break*/, 5];
-                    case 5: return [3 /*break*/, 10];
+                    case 5: return [3 /*break*/, 12];
                     case 6:
-                        if (!(resolvedUrl.type === UrlType.file)) return [3 /*break*/, 10];
+                        if (!(resolvedUrl.type === UrlType.file)) return [3 /*break*/, 11];
                         _a.label = 7;
                     case 7:
                         _a.trys.push([7, 9, , 10]);
@@ -147,7 +151,11 @@ var MapboxRender = /** @class */ (function () {
                         };
                         callback(null, mapSourceResponse);
                         return [3 /*break*/, 10];
-                    case 10: return [2 /*return*/];
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
+                        callback(new Error("Unknown type: " + resolvedUrl.type));
+                        _a.label = 12;
+                    case 12: return [2 /*return*/];
                 }
             });
         }); };
@@ -155,7 +163,6 @@ var MapboxRender = /** @class */ (function () {
             request: this.handleRequest,
             ratio: 1.0
         };
-        this.asyncWait = util.promisify(this.wait);
         this.options = options;
         this.mapOptions = __assign({}, this.mapOptions, { ratio: this.options.ratio || 1.0 });
         this.map = new mbgl.Map(this.mapOptions);
@@ -177,12 +184,38 @@ var MapboxRender = /** @class */ (function () {
     MapboxRender.prototype.error = function (error) {
         throw error;
     };
+    /** Evaluate type of given url
+     * @param url URL to evaluate
+     * @return Protocol that is defined by the URL
+    */
+    MapboxRender.prototype.getUrlType = function (url) {
+        // FIXME: Use a map with regex or something
+        if (url.startsWith("mapbox://tiles")) {
+            return UrlType.mapboxTile;
+        }
+        else if (url.startsWith("mapbox://fonts")) {
+            return UrlType.mapboxFont;
+        }
+        else if (url.startsWith("mapbox://")) {
+            return UrlType.mapbox;
+        }
+        else if (url.startsWith('http://')) {
+            return UrlType.http;
+        }
+        else if (url.startsWith('https://')) {
+            return UrlType.http;
+        }
+        else if (url.startsWith('file://')) {
+            return UrlType.file;
+        }
+        return UrlType.unknown;
+    };
     /**
     * URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual URL (like `mapbox://mapbox.terrain-rgb`) before we can request the data.
     * Also, an API-Key (`access_token`) will be added to allow downloading mapbox ressources.
     * If you get 404-errors you need to start looking here...
     * @param url The URL that needs resolving
-    * @return Resolved URL that can be fed to `request`.
+    * @return ResolvedUrl-Object that can be used in `request`.
     */
     MapboxRender.prototype.resolveUrl = function (url) {
         // adapt/modify url if needed
@@ -210,6 +243,8 @@ var MapboxRender = /** @class */ (function () {
                 urlObject.set("protocol", "https");
                 urlObject.set("host", "api.mapbox.com");
                 resolvedUrl.url = urlObject.toString();
+                // update type after rewriting
+                resolvedUrl.type = this.getUrlType(resolvedUrl.url);
             case UrlType.http:
                 break;
             case UrlType.file:
@@ -259,53 +294,15 @@ var MapboxRender = /** @class */ (function () {
             lat: (bounds.righttop.lat + bounds.leftbottom.lat) / 2
         };
     };
-    MapboxRender.prototype.getUrlType = function (url) {
-        // FIXME: Use a map with regex or something
-        if (url.startsWith("mapbox://tiles")) {
-            return UrlType.mapboxTile;
-        }
-        else if (url.startsWith("mapbox://fonts")) {
-            return UrlType.mapboxFont;
-        }
-        else if (url.startsWith("mapbox://")) {
-            return UrlType.mapbox;
-        }
-        else if (url.startsWith('http://')) {
-            return UrlType.http;
-        }
-        else if (url.startsWith('file://')) {
-            return UrlType.file;
-        }
-        return UrlType.unknown;
-    };
-    MapboxRender.prototype.wait = function (delay, callback) {
-        var id = setInterval(function () {
-            // Generate a random number between 0 and 1
-            var rand = Math.random();
-            if (rand > 0.95) {
-                callback(null, 'Congratulations, you have finished waiting.');
-                clearInterval(id);
-            }
-            else if (rand < 0.02) {
-                callback('Could not wait any longer!', null);
-                clearInterval(id);
-            }
-            else {
-                //              console.log('Waiting ...');
-            }
-        }, Number(delay));
-    };
-    ;
+    /** Set up mapbox-library with a mapbox-style
+     * @param styleUrl
+     */
     MapboxRender.prototype.loadStyle = function (styleUrl) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, error_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        // await Promise.all([
-                        //     asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
-                        //     this.asyncWait(1)
-                        // ])
                         this.options.styleUrl = styleUrl ? styleUrl : this.options.styleUrl;
                         _b.label = 1;
                     case 1:

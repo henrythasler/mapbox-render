@@ -28,10 +28,10 @@ declare module '@mapbox/mapbox-gl-native' {
     }
 
     export interface RenderOptions {
-        zoom?: number, // number, defaults to 0
-        width?: number, // number (px), defaults to 512
-        height?: number, // number (px), defaults to 512
-        center?: number[], // array of numbers (coordinates), defaults to [0,0]
+        zoom: number, // number, defaults to 0
+        width: number, // number (px), defaults to 512
+        height: number, // number (px), defaults to 512
+        center: number[], // array of numbers (coordinates), defaults to [0,0]
         bearing?: number, // number (in degrees, counter-clockwise from north), defaults to 0
         pitch?: number, // number (in degrees, arcing towards the horizon), defaults to 0
         classes?: string[] // array of strings

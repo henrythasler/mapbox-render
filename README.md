@@ -29,6 +29,7 @@ Run application:
 - https://github.com/mapbox/mapbox-gl-native/tree/master/platform/node
 - https://github.com/consbio/mbgl-renderer
 - https://github.com/klokantech/tileserver-gl
+- https://github.com/mapbox/tilebelt
 
 ## NodeJs/JavaScript References
 

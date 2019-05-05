@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "name": "background-only",
+  "sources": {
+    "mapbox-terrain-rgb": {
+      "type": "raster-dem",
+      "url": "mapbox://mapbox.terrain-rgb"
+    },
+    "contour-lines": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-terrain-v2"
+      }    
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#fff"
+      }
+    },
+    {
+      "id": "hillshading",
+      "source": "mapbox-terrain-rgb",
+      "type": "hillshade",
+      "paint": {
+        "hillshade-illumination-direction": 315,
+        "hillshade-exaggeration": 1,
+        "hillshade-shadow-color": "#000",
+        "hillshade-highlight-color": "#fff",
+        "hillshade-accent-color": "#000"
+      }
+    },
+    {
+      "id": "contour-lines",
+      "type": "line",
+      "source": "contour-lines",
+      "source-layer": "contour",
+      "paint": {
+        "line-color": "#6f6"
+      }      
+    }    
+  ]
+}

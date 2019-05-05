@@ -11,7 +11,7 @@
     "example:watch": "tsc -p tsconfig.dist.json --watch",
     "static-image": "node example/static-image.js",
     "testcoverage": "nyc mocha -r ts-node/register test/**/render.test.ts",
-    "test": "mocha --reporter spec -r ts-node/register test/**/render.test.ts"
+    "test": "mocha --exit --reporter spec -r ts-node/register test/**/render.test.ts"
   },
   "bin": {},
   "dependencies": {

@@ -1,12 +1,12 @@
 import * as render from "../dist/render.js";
 import { expect } from "chai";
-import * as fs from "fs";
-import * as util from "util";
+// import * as fs from "fs";
+// import * as util from "util";
 import "mocha";
 import * as sharp from "sharp";
 import pixelmatch = require('pixelmatch');
 
-const asyncReadFile = util.promisify(fs.readFile);
+// const asyncReadFile = util.promisify(fs.readFile);
 const testAssetsPath = "test/assets/";
 const testOutputPath = "test/out/";
 
@@ -18,8 +18,7 @@ describe("Coordinate Transformation Tests", function () {
         };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getWGS84FromMercator({ x: 0, y: 0 })
-        expect(pos).to.have.property("lng", 0);
-        expect(pos).to.have.property("lat", 0);
+        expect(pos).to.include({"lng": 0, "lat": 0});
     });
 
     it("getWGS84FromMercator with positive values", function () {
@@ -175,6 +174,21 @@ describe("Coordinate Transformation Tests", function () {
         expect(bound.righttop.lat, "bound.righttop.lat").to.be.closeTo(47.81315452, 0.00001)
     });
 
+    it("getWGS84TileBounds #4", function () {
+        let mapboxRenderOptions: render.MapboxRenderOptions = {
+            styleUrl: "",
+            debug: false
+        };
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let bound = mbr.getWGS84TileBounds({ x: 5, y: 10 }, 10)
+        expect(bound).to.have.property("leftbottom");
+        expect(bound).to.have.property("righttop");
+        expect(bound.leftbottom.lng, "bound.leftbottom.lng").to.be.closeTo(-178.242187, 0.00001)
+        expect(bound.leftbottom.lat, "bound.leftbottom.lat").to.be.closeTo(84.706049, 0.00001)
+        expect(bound.righttop.lng, "bound.righttop.lng").to.be.closeTo(-177.890625, 0.00001)
+        expect(bound.righttop.lat, "bound.righttop.lat").to.be.closeTo(84.738387, 0.00001)
+    });
+
     it("getWGS84TileCenter #1", function () {
         let mapboxRenderOptions: render.MapboxRenderOptions = {
             styleUrl: "",
@@ -210,9 +224,9 @@ describe("Render Tests", function () {
             debug: false
         };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
-
         return mbr.loadStyle("test/assets/background-only.style.json")
     });
+
     it("render background", async function () {
         let mapboxRenderOptions: render.MapboxRenderOptions = {
             styleUrl: "",
@@ -229,10 +243,7 @@ describe("Render Tests", function () {
         await mbr.loadStyle(`${testAssetsPath}background-only.style.json`);
         await mbr.render(renderParam, `${testOutputPath}background-only.png`);
         let specimen = await sharp(`${testOutputPath}background-only.png`).metadata();
-        expect(specimen).to.have.property("format", "png");
-        expect(specimen).to.have.property("width", 256);
-        expect(specimen).to.have.property("height", 256);
-        expect(specimen).to.have.property("channels", 4);
+        expect(specimen).to.include({"format": "png", "width": 256, "height": 256, "channels": 4});
     });
 
     it("render features from local file #1", async function () {
@@ -288,11 +299,43 @@ describe("Render Tests", function () {
         expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(459, 15);
     });
 
+    it("render features from external mapbox ressources", async function () {
+        this.timeout(10000);
+        let mapboxRenderOptions: render.MapboxRenderOptions = {
+            styleUrl: "",
+            debug: false,
+            accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg"
+        };
+        let width: number = 512;
+        let height: number = 512;
+
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let center:render.WGS84 = mbr.getWGS84TileCenter({x: 1093, y:715}, 11)
+        let renderParam: render.RenderParameters = {
+            center: [center.lng, center.lat],
+            zoom: 11,
+            width: width,
+            height: height
+        };
+        
+        await mbr.loadStyle(`${testAssetsPath}mapbox-ressource.style.json`);
+        await mbr.render(renderParam, `${testOutputPath}hillshading-contourlines.png`);
+
+        expect(true).to.be.true;
+
+        let specimen = await sharp(`${testOutputPath}hillshading-contourlines.png`).raw().toBuffer();
+        let reference = await sharp(`${testAssetsPath}hillshading-contourlines-golden.png`).raw().toBuffer();
+        let diff = await sharp({ create: { width: width, height: height, channels: 4, background: "#000" } }).raw().toBuffer();
+        let mismatchedPixels = pixelmatch(specimen, reference, diff, width, height);
+        await sharp(diff, { raw: { width: width, height: height, channels: 4 } }).png().toFile(`${testOutputPath}hillshading-contourlines-golden-diff.png`);
+        expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
+    });
 
 });
 
 
 describe('Error handling tests', function () {
+
     it("Try to load a NOT existing style", function () {
         let mapboxRenderOptions: render.MapboxRenderOptions = {
             styleUrl: "",
@@ -305,11 +348,10 @@ describe('Error handling tests', function () {
                 expect(e).to.be.an("Error");
                 expect(e).to.have.property("errno");
                 expect(e.errno).to.be.below(0);
-                expect(e).to.have.property("code", "ENOENT");
-                expect(e).to.have.property("syscall", "open");
-                expect(e).to.have.property("path", "this-file-does-not-exist.json");
+                expect(e).to.include({"code": "ENOENT", "syscall": "open", "path": "this-file-does-not-exist.json"});
             });
     });
+
     it("Try to load a corrupted style", function () {
         let mapboxRenderOptions: render.MapboxRenderOptions = {
             styleUrl: "",

@@ -20,7 +20,9 @@ export interface RenderParameters {
     center: number[],
     zoom: number,
     width: number,
-    height: number
+    height: number,
+    bearing?: number,
+    pitch?: number
 }
 
 export interface WGS84 {
@@ -74,22 +76,24 @@ export class MapboxRender {
     private handleRequest = async (mapSourceRequest: mbgl.MapSourceRequest, callback: (error: Error | null, sourceResponse?: mbgl.MapSourceResponse) => void) => {
 
         let resolvedUrl: ResolvedUrl = this.resolveUrl(mapSourceRequest.url);
-        this.debug(`${mapSourceRequest.kind} ${mapSourceRequest.url}\n => ${resolvedUrl.url}`);
+        this.debug(`${mapSourceRequest.kind} ${mapSourceRequest.url}\n => ${resolvedUrl.type} ${resolvedUrl.url}`);
 
         if (resolvedUrl.url.length === 0) {
+            this.debug(`Unknown URL: ${mapSourceRequest.url}`)
             callback(new Error(`Unknown UrlType ${mapSourceRequest.url}`));
         }
         else {
             if (resolvedUrl.type === UrlType.http) {
                 try {
-                    this.debug(`READING: ${resolvedUrl}`)
+                    this.debug(`READING: ${resolvedUrl.url}`)
                     let responseData = await requestPromise({
                         url: resolvedUrl.url,
                         encoding: null,
                         gzip: true,
-                        resolveWithFullResponse: true
+                        resolveWithFullResponse: true,
+                        timeout: 5000
                     });
-
+                    this.debug(`DONE READING: ${resolvedUrl.url}`)
                     if (responseData.statusCode === 200) {
                         let mapSourceResponse: mbgl.MapSourceResponse = {
                             modified: (responseData.headers.modified) ? new Date(responseData.headers.modified[0]) : undefined,
@@ -103,6 +107,7 @@ export class MapboxRender {
                         callback(new Error(`${responseData.statusCode} - ${responseData.statusMessage}: ${responseData.request.href}`));
                     }
                 } catch (err) {
+                    this.debug(`ERROR READING: ${resolvedUrl.url}`)
                     if (err.cause) {
                         callback(new Error(`${err.cause.syscall} - ${err.options.url}: ${err.cause.code}`));
                     }
@@ -129,9 +134,9 @@ export class MapboxRender {
                         data: new Buffer("")
                     };
                     callback(null, mapSourceResponse);
-                    // callback(err);
                 }
             }
+            else callback(new Error(`Unknown type: ${resolvedUrl.type}`));
         }
     }
 
@@ -171,12 +176,40 @@ export class MapboxRender {
         throw error;
     }
 
+
+    /** Evaluate type of given url
+     * @param url URL to evaluate
+     * @return Protocol that is defined by the URL
+    */
+    private getUrlType(url: string): UrlType {
+        // FIXME: Use a map with regex or something
+        if (url.startsWith("mapbox://tiles")) {
+            return UrlType.mapboxTile
+        }
+        else if (url.startsWith("mapbox://fonts")) {
+            return UrlType.mapboxFont;
+        }
+        else if (url.startsWith("mapbox://")) {
+            return UrlType.mapbox;
+        }
+        else if (url.startsWith('http://')) {
+            return UrlType.http
+        }
+        else if (url.startsWith('https://')) {
+            return UrlType.http
+        }
+        else if (url.startsWith('file://')) {
+            return UrlType.file
+        }
+        return UrlType.unknown
+    }
+
     /**
     * URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual URL (like `mapbox://mapbox.terrain-rgb`) before we can request the data.
     * Also, an API-Key (`access_token`) will be added to allow downloading mapbox ressources.
     * If you get 404-errors you need to start looking here...
     * @param url The URL that needs resolving
-    * @return Resolved URL that can be fed to `request`.
+    * @return ResolvedUrl-Object that can be used in `request`.
     */
     private resolveUrl(url: string): ResolvedUrl {
         // adapt/modify url if needed
@@ -206,6 +239,8 @@ export class MapboxRender {
                 urlObject.set("protocol", "https");
                 urlObject.set("host", "api.mapbox.com");
                 resolvedUrl.url = urlObject.toString();
+                // update type after rewriting
+                resolvedUrl.type = this.getUrlType(resolvedUrl.url);
             case UrlType.http:
                 break;
             case UrlType.file:
@@ -252,57 +287,16 @@ export class MapboxRender {
     getWGS84TileCenter(tile: Vector, zoom: number, tileSize: number = 256): WGS84 {
         let bounds: WGS84BoundingBox = this.getWGS84TileBounds(tile, zoom, tileSize);
         return (<WGS84>{
-            lng: (bounds.righttop.lng + bounds.leftbottom.lng)/2,
-            lat: (bounds.righttop.lat + bounds.leftbottom.lat)/2,
+            lng: (bounds.righttop.lng + bounds.leftbottom.lng) / 2,
+            lat: (bounds.righttop.lat + bounds.leftbottom.lat) / 2,
         })
     }
 
 
-    private getUrlType(url: string): UrlType {
-        // FIXME: Use a map with regex or something
-        if (url.startsWith("mapbox://tiles")) {
-            return UrlType.mapboxTile
-        }
-        else if (url.startsWith("mapbox://fonts")) {
-            return UrlType.mapboxFont;
-        }
-        else if (url.startsWith("mapbox://")) {
-            return UrlType.mapbox;
-        }
-        else if (url.startsWith('http://')) {
-            return UrlType.http
-        }
-        else if (url.startsWith('file://')) {
-            return UrlType.file
-        }
-        return UrlType.unknown
-    }
-
-
-    private wait(delay: number, callback: any) { /* … */
-        const id = setInterval(() => {
-            // Generate a random number between 0 and 1
-            const rand = Math.random();
-
-            if (rand > 0.95) {
-                callback(null, 'Congratulations, you have finished waiting.');
-                clearInterval(id);
-            } else if (rand < 0.02) {
-                callback('Could not wait any longer!', null);
-                clearInterval(id);
-            } else {
-                //              console.log('Waiting ...');
-            }
-        }, Number(delay));
-    };
-    private asyncWait = util.promisify(this.wait);
-
+    /** Set up mapbox-library with a mapbox-style
+     * @param styleUrl
+     */
     async loadStyle(styleUrl?: string) {
-        // await Promise.all([
-        //     asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
-        //     this.asyncWait(1)
-        // ])
-
         this.options.styleUrl = styleUrl ? styleUrl : this.options.styleUrl;
         try {
             this.style = await asyncReadFile(this.options.styleUrl, { encoding: "utf-8" });
@@ -310,14 +304,8 @@ export class MapboxRender {
         } catch (error) {
             this.error(error);
         }
-
-        // let result:string="";
-        // try {
-        //     result = <string>await this.asyncWait(1);
-        // } catch (error) {
-        //     console.error(error);
-        // }
     }
+
 
     async render(param: RenderParameters, outputFile: string): Promise<boolean | Error> {
         // FIXME: find out why that does not work
