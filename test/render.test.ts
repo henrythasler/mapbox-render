@@ -1,8 +1,12 @@
 import * as render from "../dist/render.js";
 import { expect } from "chai";
-// import * as fs from "fs";
-// import * as util from "util";
-import "mocha";
+
+/** You can easily switch between jest and mocha. Just use the right import below. 
+ * Use `npm run test:mocha` for mocha
+ * `npm test` for jest */ 
+import "jest";
+// import "mocha";
+
 import * as sharp from "sharp";
 import pixelmatch = require('pixelmatch');
 
@@ -300,7 +304,6 @@ describe("Render Tests", function () {
     });
 
     it("render features from external mapbox ressources", async function () {
-        this.timeout(10000);
         let mapboxRenderOptions: render.MapboxRenderOptions = {
             styleUrl: "",
             debug: false,
@@ -366,6 +369,6 @@ describe('Error handling tests', function () {
             });
     });
 
-    it("Try to save image to a write-protected file");
-
+    // it("Try to save image to a write-protected file");  // to-do for mocha
+    test.todo("Try to save image to a write-protected file"); // to-do for jest
 });

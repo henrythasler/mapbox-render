@@ -3,7 +3,8 @@
         "outDir": "dist",
         "strict": true,
         "sourceMap": true,
-        "declaration": true
+        "declaration": true,
+        "importHelpers": true
     },
     "files": [
         "src/render.ts",

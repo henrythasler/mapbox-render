@@ -24,6 +24,16 @@ Run application:
 
 `nodejs node_modules/dts-gen/bin/lib/run.js`
 
+## Testing
+
+### Jest
+
+`npm install --save-dev jest ts-jest @types/jest`
+
+### Mocha
+
+`npm install --save-dev mocha ts-node @types/mocha`
+
 ## Mapbox References
 
 - https://github.com/mapbox/mapbox-gl-native/tree/master/platform/node
