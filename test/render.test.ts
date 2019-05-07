@@ -3,7 +3,7 @@ import { expect } from "chai";
 
 /** You can easily switch between jest and mocha. Just use the right import below. 
  * Use `npm run test:mocha` for mocha
- * `npm test` for jest */ 
+ * `npm test` for jest */
 import "jest";
 // import "mocha";
 
@@ -14,22 +14,20 @@ import pixelmatch = require('pixelmatch');
 const testAssetsPath = "test/assets/";
 const testOutputPath = "test/out/";
 
+const mapboxRenderOptions: render.MapboxRenderOptions = {
+    styleUrl: "",
+    debug: false,
+    accessToken: ""
+};
+
 describe("Coordinate Transformation Tests", function () {
     it("getWGS84FromMercator with zeros", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getWGS84FromMercator({ x: 0, y: 0 })
-        expect(pos).to.include({"lng": 0, "lat": 0});
+        expect(pos).to.include({ "lng": 0, "lat": 0 });
     });
 
     it("getWGS84FromMercator with positive values", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getWGS84FromMercator({ x: 1252344, y: 6105178 })
         expect(pos).to.have.property("lng");
@@ -39,10 +37,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84FromMercator with negative values", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getWGS84FromMercator({ x: -7604567, y: -7330617 })
         expect(pos).to.have.property("lng");
@@ -52,10 +46,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84FromMercator projected bounds", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getWGS84FromMercator({ x: -20037508.342789, y: 20037508.342789 })
         expect(pos).to.have.property("lng");
@@ -65,10 +55,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getMercatorFromPixels at Null-Island", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getMercatorFromPixels({ x: 256, y: 256 }, 1)
         expect(pos).to.have.property("x");
@@ -78,10 +64,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getMercatorFromPixels #1", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getMercatorFromPixels({ x: 0, y: 0 }, 1)
         expect(pos).to.have.property("x");
@@ -91,10 +73,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getMercatorFromPixels #2", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let pos = mbr.getMercatorFromPixels({ x: 1301248, y: 2864384 }, 14)
         expect(pos).to.have.property("x");
@@ -104,10 +82,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getMercatorTileBounds #1", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let bound = mbr.getMercatorTileBounds({ x: 0, y: 0 }, 1)
         expect(bound).to.have.property("leftbottom");
@@ -119,10 +93,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getMercatorTileBounds #2", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let bound = mbr.getMercatorTileBounds({ x: 5083, y: 11188 }, 14)
         expect(bound).to.have.property("leftbottom");
@@ -134,10 +104,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84TileBounds #1", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let bound = mbr.getWGS84TileBounds({ x: 0, y: 0 }, 1)
         expect(bound).to.have.property("leftbottom");
@@ -149,10 +115,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84TileBounds #2", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let bound = mbr.getWGS84TileBounds({ x: 272, y: 177 }, 9)
         expect(bound).to.have.property("leftbottom");
@@ -164,10 +126,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84TileBounds #3", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let bound = mbr.getWGS84TileBounds({ x: 4383, y: 2854 }, 13)
         expect(bound).to.have.property("leftbottom");
@@ -179,10 +137,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84TileBounds #4", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let bound = mbr.getWGS84TileBounds({ x: 5, y: 10 }, 10)
         expect(bound).to.have.property("leftbottom");
@@ -194,10 +148,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84TileCenter #1", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let center = mbr.getWGS84TileCenter({ x: 0, y: 0 }, 0)
         expect(center).to.have.property("lng");
@@ -207,10 +157,6 @@ describe("Coordinate Transformation Tests", function () {
     });
 
     it("getWGS84TileCenter #2", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         let center = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
         expect(center).to.have.property("lng");
@@ -223,19 +169,11 @@ describe("Coordinate Transformation Tests", function () {
 
 describe("Render Tests", function () {
     it("load a mapbox style", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
         return mbr.loadStyle("test/assets/background-only.style.json")
     });
 
     it("render background", async function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let renderParam: render.RenderParameters = {
             center: [0, 0],
             zoom: 0,
@@ -247,14 +185,10 @@ describe("Render Tests", function () {
         await mbr.loadStyle(`${testAssetsPath}background-only.style.json`);
         await mbr.render(renderParam, `${testOutputPath}background-only.png`);
         let specimen = await sharp(`${testOutputPath}background-only.png`).metadata();
-        expect(specimen).to.include({"format": "png", "width": 256, "height": 256, "channels": 4});
+        expect(specimen).to.include({ "format": "png", "width": 256, "height": 256, "channels": 4 });
     });
 
     it("render features from local file #1", async function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let width: number = 512;
         let height: number = 512;
 
@@ -278,12 +212,9 @@ describe("Render Tests", function () {
     });
 
     it("render features from local file #2 (negative test)", async function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let width: number = 512;
         let height: number = 512;
+
         let renderParam: render.RenderParameters = {
             center: [12.63427717, 47.79839469],
             zoom: 13,
@@ -304,27 +235,20 @@ describe("Render Tests", function () {
     });
 
     it("render features from external mapbox ressources", async function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false,
-            accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg"
-        };
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let center:render.WGS84 = mbr.getWGS84TileCenter({x: 1093, y:715}, 11)
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 1093, y: 715 }, 11)
         let renderParam: render.RenderParameters = {
             center: [center.lng, center.lat],
             zoom: 11,
             width: width,
             height: height
         };
-        
+
         await mbr.loadStyle(`${testAssetsPath}mapbox-ressource.style.json`);
         await mbr.render(renderParam, `${testOutputPath}hillshading-contourlines.png`);
-
-        expect(true).to.be.true;
 
         let specimen = await sharp(`${testOutputPath}hillshading-contourlines.png`).raw().toBuffer();
         let reference = await sharp(`${testAssetsPath}hillshading-contourlines-golden.png`).raw().toBuffer();
@@ -340,10 +264,6 @@ describe("Render Tests", function () {
 describe('Error handling tests', function () {
 
     it("Try to load a NOT existing style", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
         return mbr.loadStyle("this-file-does-not-exist.json")
@@ -351,15 +271,11 @@ describe('Error handling tests', function () {
                 expect(e).to.be.an("Error");
                 expect(e).to.have.property("errno");
                 expect(e.errno).to.be.below(0);
-                expect(e).to.include({"code": "ENOENT", "syscall": "open", "path": "this-file-does-not-exist.json"});
+                expect(e).to.include({ "code": "ENOENT", "syscall": "open", "path": "this-file-does-not-exist.json" });
             });
     });
 
     it("Try to load a corrupted style", function () {
-        let mapboxRenderOptions: render.MapboxRenderOptions = {
-            styleUrl: "",
-            debug: false
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
         return mbr.loadStyle("test/assets/this-is-not-a-style.json")
@@ -369,6 +285,30 @@ describe('Error handling tests', function () {
             });
     });
 
+    it("Try to save image to invalid location", async function () {
+        let width: number = 512;
+        let height: number = 512;
+
+        let renderParam: render.RenderParameters = {
+            center: [12.63427717, 47.79839469],
+            zoom: 13,
+            width: width,
+            height: height
+        };
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+
+        await mbr.loadStyle("test/assets/local-file.style.json");
+        try {
+            await mbr.render(renderParam, "test/not-existing/not-existing.png");
+        }
+        catch (e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message");
+            expect(e.message).to.have.match(/unable to open file/);
+        }
+    });
+
     // it("Try to save image to a write-protected file");  // to-do for mocha
-    test.todo("Try to save image to a write-protected file"); // to-do for jest
+    test.todo("Use invalid mapbox-token"); // to-do for jest
+
 });
