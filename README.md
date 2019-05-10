@@ -24,6 +24,21 @@ Run application:
 
 `nodejs node_modules/dts-gen/bin/lib/run.js`
 
+## Resolving Map Sources
+
+style-url | mapbox-url | API-Endpoint
+---|---|---
+`mapbox://mapbox.mapbox-streets-v8` | 
+`mapbox://mapbox.mapbox-terrain-v2` | 
+`mapbox://mapbox.mapbox-traffic-v1` |
+`mapbox://mapbox.enterprise-boundaries-XX-YY` |
+`mapbox://mapbox.terrain-rgb` | `mapbox://tiles/mapbox.terrain-rgb/{z}/{x}/{y}@2x.png` |`https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}@2x.png`
+`mapbox://mapbox.mapbox-terrain-v2` | `mapbox://tiles/mapbox.mapbox-terrain-v2/{z}/{x}/{y}.vector.pbf` | `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/{z}/{x}/{y}.vector.pbf`
+`mapbox://fonts/mapbox/{fontstack}/{range}.pbf` | `mapbox://fonts/mapbox/Open%20Sans%20Regular%2cArial%20Unicode%20MS%20Regular/0-255.pbf` | `https://api.mapbox.com/fonts/v1/mapbox/Open%20Sans%20Regular%2cArial%20Unicode%20MS%20Regular/0-255.pbf`
+`mapbox://sprites/mapbox/streets-v8` | `mapbox://sprites/mapbox/bright-v8.png` | ``
+
+
+
 ## Testing
 
 ### Jest

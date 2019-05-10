@@ -59,12 +59,29 @@ export declare class MapboxRender {
     */
     private error;
     /** Evaluate type of given url
+     *  Mapbox-URLs are of the form `mapbox://<mapid>`
+     *  For vector-tiles <mapid> is one of
+     *      `mapbox.mapbox-streets-v8`
+     *      `mapbox.mapbox-terrain-v2`
+     *      `mapbox.mapbox-traffic-v1`
+     *      `mapbox.enterprise-boundaries-XX-YY`
+     *
+     * deprecated:
+     *      `mapbox.mapbox-streets-v7`
+     *      `mapbox.mapbox-streets-v6`
+     *      `mapbox.mapbox-streets-v5`
+     *
+     *  For
+     *
+     *  see `https://docs.mapbox.com/vector-tiles/reference/` for a description.
+     *
      * @param url URL to evaluate
      * @return Protocol that is defined by the URL
     */
     private getUrlType;
     /**
-    * URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual URL (like `mapbox://mapbox.terrain-rgb`) before we can request the data.
+    * mapbox-URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual
+    * URL (like `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.png`) before we can request the data.
     * Also, an API-Key (`access_token`) will be added to allow downloading mapbox ressources.
     * If you get 404-errors you need to start looking here...
     * @param url The URL that needs resolving

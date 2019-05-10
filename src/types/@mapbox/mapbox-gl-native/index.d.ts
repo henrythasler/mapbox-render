@@ -24,7 +24,7 @@ declare module '@mapbox/mapbox-gl-native' {
 
     export interface MapOptions {
         request: (request: MapSourceRequest, callback: (error: Error | null, sourceResponse?:MapSourceResponse) => void) => void,
-        ratio?: number,
+        ratio: number,
     }
 
     export interface RenderOptions {

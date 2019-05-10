@@ -3,8 +3,7 @@
         "outDir": "dist",
         "strict": true,
         "sourceMap": true,
-        "declaration": true,
-        "importHelpers": true
+        "declaration": true
     },
     "files": [
         "src/render.ts",
@@ -13,6 +12,6 @@
         "src/types/**/*",
     ],
     "exclude": [
-        "node_modules/@types/jest/**/*"
+        "node_modules"
     ]
 }

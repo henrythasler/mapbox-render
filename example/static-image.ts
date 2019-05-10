@@ -4,7 +4,7 @@ let mapboxRenderOptions: render.MapboxRenderOptions = {
     styleUrl: "data/cyclemap-simple.json",  // see https://en.wikipedia.org/wiki/URL; https://url.spec.whatwg.org/
     accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg",
     debug: true,
-    ratio: 1
+    ratio: 2
 }
 
 let mbr = new render.MapboxRender(mapboxRenderOptions);
@@ -16,7 +16,7 @@ let renderParam: render.RenderParameters = {
     height: 512
 }
 
-mbr.loadStyle("data/cyclemap-simple.json")
+mbr.loadStyle("example/cyclemap-simple.json")
     .then(() => {
         mbr.render(renderParam, "example/image.png")
             .then(() => {

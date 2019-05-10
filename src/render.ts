@@ -55,6 +55,7 @@ enum UrlType {
     mapbox,
     mapboxTile,
     mapboxFont,
+    mapboxSprite,
     file,
     http
 }
@@ -163,6 +164,7 @@ export class MapboxRender {
     * @param message Message to print
     */
     private debug(message: string): void {
+        /* istanbul ignore next */
         if (this.options.debug) {
             console.log(message);
         }
@@ -178,10 +180,31 @@ export class MapboxRender {
 
 
     /** Evaluate type of given url
+     *  Mapbox-URLs are of the form `mapbox://<mapid>`
+     *  For vector-tiles <mapid> is one of
+     *      `mapbox.mapbox-streets-v8`
+     *      `mapbox.mapbox-terrain-v2`
+     *      `mapbox.mapbox-traffic-v1`
+     *      `mapbox.enterprise-boundaries-XX-YY`
+     * 
+     * deprecated:
+     *      `mapbox.mapbox-streets-v7`
+     *      `mapbox.mapbox-streets-v6`
+     *      `mapbox.mapbox-streets-v5`
+     * 
+     *  For 
+     * 
+     *  see `https://docs.mapbox.com/vector-tiles/reference/` for a description.
+     * 
      * @param url URL to evaluate
      * @return Protocol that is defined by the URL
     */
     private getUrlType(url: string): UrlType {
+        // let typeMap:object = {
+        //     "mapbox://tiles": UrlType.mapboxTile,
+        //     "mapbox://fonts": UrlType.mapboxFont
+        //     "mapbox://": UrlType.mapbox
+        // }
         // FIXME: Use a map with regex or something
         if (url.startsWith("mapbox://tiles")) {
             return UrlType.mapboxTile
@@ -189,13 +212,13 @@ export class MapboxRender {
         else if (url.startsWith("mapbox://fonts")) {
             return UrlType.mapboxFont;
         }
+        else if (url.startsWith("mapbox://sprites")) {
+            return UrlType.mapboxSprite;
+        }
         else if (url.startsWith("mapbox://")) {
             return UrlType.mapbox;
         }
-        else if (url.startsWith('http://')) {
-            return UrlType.http
-        }
-        else if (url.startsWith('https://')) {
+        else if (url.startsWith('http')) {
             return UrlType.http
         }
         else if (url.startsWith('file://')) {
@@ -205,7 +228,8 @@ export class MapboxRender {
     }
 
     /**
-    * URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual URL (like `mapbox://mapbox.terrain-rgb`) before we can request the data.
+    * mapbox-URLs used in style-files (e.g. `mapbox://mapbox.terrain-rgb`) must be resolved to an actual 
+    * URL (like `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.png`) before we can request the data.
     * Also, an API-Key (`access_token`) will be added to allow downloading mapbox ressources.
     * If you get 404-errors you need to start looking here...
     * @param url The URL that needs resolving
@@ -219,6 +243,7 @@ export class MapboxRender {
             case UrlType.mapbox:
             case UrlType.mapboxTile:
             case UrlType.mapboxFont:
+            case UrlType.mapboxSprite:
                 let urlObject = new URL(url, true);
                 // this.debug(urlObject);
 
@@ -230,6 +255,19 @@ export class MapboxRender {
                 else if (resolvedUrl.type === UrlType.mapboxFont) {
                     urlObject.set("query", { ...{ access_token: this.options.accessToken }, ...urlObject.query });
                     urlObject.set("pathname", `/fonts/v1${urlObject.pathname}`);
+                }
+                else if (resolvedUrl.type === UrlType.mapboxSprite) {
+                    // console.log(urlObject);
+                    urlObject.set("query", { ...{ access_token: this.options.accessToken }, ...urlObject.query });
+                    let style = urlObject.pathname.split(".")[0];
+                    let ext = urlObject.pathname.split(".")[1];
+                    let ratio = "";
+                    if (style.indexOf("@") > 0) {
+                        // console.log(style);
+                        ratio = "@"+style.split("@")[1];
+                        style = style.split("@")[0];
+                    }
+                    urlObject.set("pathname", `/styles/v1${style}/sprite${ratio}.${ext}`);
                 }
                 else {
                     // combine given query string with access_token and secury-property. Given properties are preserved
@@ -246,6 +284,7 @@ export class MapboxRender {
             case UrlType.file:
                 resolvedUrl.url = resolvedUrl.url.split("file://")[1];
                 break;
+            /* istanbul ignore next */
             default:
                 break;
         }
@@ -337,8 +376,8 @@ export class MapboxRender {
                 this.map.release();
                 var image = sharp(buffer, {
                     raw: {
-                        width: param.width,
-                        height: param.height,
+                        width: param.width*this.mapOptions.ratio,
+                        height: param.height*this.mapOptions.ratio,
                         channels: 4
                     }
                 });

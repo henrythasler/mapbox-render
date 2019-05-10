@@ -1,4 +1,4 @@
-import * as render from "../dist/render.js";
+import * as render from "../src/render";
 import { expect } from "chai";
 
 /** You can easily switch between jest and mocha. Just use the right import below. 
@@ -234,7 +234,7 @@ describe("Render Tests", function () {
         expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(459, 15);
     });
 
-    it("render features from external mapbox ressources", async function () {
+    it("render raster and vector features from external mapbox ressources", async function () {
         let width: number = 512;
         let height: number = 512;
 
@@ -255,6 +255,54 @@ describe("Render Tests", function () {
         let diff = await sharp({ create: { width: width, height: height, channels: 4, background: "#000" } }).raw().toBuffer();
         let mismatchedPixels = pixelmatch(specimen, reference, diff, width, height);
         await sharp(diff, { raw: { width: width, height: height, channels: 4 } }).png().toFile(`${testOutputPath}hillshading-contourlines-golden-diff.png`);
+        expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
+    });
+
+    it("render text and icons from external mapbox ressources", async function () {
+        let width: number = 512;
+        let height: number = 512;
+
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
+        let renderParam: render.RenderParameters = {
+            center: [center.lng, center.lat],
+            zoom: 13,
+            width: width,
+            height: height
+        };
+
+        await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
+        await mbr.render(renderParam, `${testOutputPath}text-icons.png`);
+
+        let specimen = await sharp(`${testOutputPath}text-icons.png`).raw().toBuffer();
+        let reference = await sharp(`${testAssetsPath}text-icons-golden.png`).raw().toBuffer();
+        let diff = await sharp({ create: { width: width, height: height, channels: 4, background: "#000" } }).raw().toBuffer();
+        let mismatchedPixels = pixelmatch(specimen, reference, diff, width, height);
+        await sharp(diff, { raw: { width: width, height: height, channels: 4 } }).png().toFile(`${testOutputPath}text-icons-golden-diff.png`);
+        expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
+    });
+
+    it("render text and icons from external mapbox ressources with x2 scaling", async function () {
+        let width: number = 512;
+        let height: number = 512;
+
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ratio: 2, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
+        let renderParam: render.RenderParameters = {
+            center: [center.lng, center.lat],
+            zoom: 13,
+            width: width,
+            height: height
+        };
+
+        await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
+        await mbr.render(renderParam, `${testOutputPath}text-icons@2.png`);
+
+        let specimen = await sharp(`${testOutputPath}text-icons@2.png`).raw().toBuffer();
+        let reference = await sharp(`${testAssetsPath}text-icons@2-golden.png`).raw().toBuffer();
+        let diff = await sharp({ create: { width: 2*width, height: 2*height, channels: 4, background: "#000" } }).raw().toBuffer();
+        let mismatchedPixels = pixelmatch(specimen, reference, diff, 2*width, 2*height);
+        await sharp(diff, { raw: { width: 2*width, height: 2*height, channels: 4 } }).png().toFile(`${testOutputPath}text-icons@2-golden-diff.png`);
         expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
     });
 
@@ -286,14 +334,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to save image to invalid location", async function () {
-        let width: number = 512;
-        let height: number = 512;
-
         let renderParam: render.RenderParameters = {
             center: [12.63427717, 47.79839469],
             zoom: 13,
-            width: width,
-            height: height
+            width: 256,
+            height: 256
         };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
@@ -308,7 +353,43 @@ describe('Error handling tests', function () {
         }
     });
 
-    // it("Try to save image to a write-protected file");  // to-do for mocha
-    test.todo("Use invalid mapbox-token"); // to-do for jest
+    it("Try to use an invalid mapbox-token", async function () {
+        let renderParam: render.RenderParameters = {
+            center: [12.63427717, 47.79839469],
+            zoom: 13,
+            width: 256,
+            height: 256
+        };
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.xxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxx" } });
+
+        await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch(e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message");
+            expect(e.message).to.have.match(/401 - Unauthorized/);
+        }
+    });
+
+    it("Try to use unknown protocol for", async function () {
+        let renderParam: render.RenderParameters = {
+            center: [12.63427717, 47.79839469],
+            zoom: 13,
+            width: 256,
+            height: 256
+        };
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+
+        await mbr.loadStyle(`${testAssetsPath}protocol-error.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch(e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message", "Unknown type: 0");
+        }
+    });
 
 });

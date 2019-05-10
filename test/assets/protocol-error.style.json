@@ -1,0 +1,30 @@
+{
+  "version": 8,
+  "name": "protocol-error",
+  "sources": {
+    "local": {
+      "type": "vector",
+      "tiles": [
+        "smtp://test/assets/{z}_{x}_{y}.pbf"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#000"
+      }
+    },
+    {
+      "id": "landuse",
+      "type": "fill",
+      "source": "local",
+      "source-layer": "landuse",
+      "paint": {
+        "fill-color": "#00f"
+      }
+    }
+  ]
+}

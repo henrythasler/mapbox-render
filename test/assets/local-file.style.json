@@ -2,7 +2,7 @@
   "version": 8,
   "name": "background-only",
   "sources": {
-    "local-file": {
+    "local": {
       "type": "vector",
       "tiles": [
         "file://test/assets/{z}_{x}_{y}.pbf"
@@ -28,7 +28,7 @@
     {
       "id": "landuse",
       "type": "fill",
-      "source": "local-file",
+      "source": "local",
       "source-layer": "landuse",
       "paint": {
         "fill-color": "#00f"
@@ -37,7 +37,7 @@
     {
       "id": "roads",
       "type": "line",
-      "source": "local-file",
+      "source": "local",
       "source-layer": "roads",
       "paint": {
         "line-color": "#0f0",
@@ -47,7 +47,7 @@
     {
       "id": "label",
       "type": "circle",
-      "source": "local-file",
+      "source": "local",
       "source-layer": "label",
       "paint": {
         "circle-color": "#f00",

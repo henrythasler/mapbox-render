@@ -1,16 +1,17 @@
 {
   "version": 8,
-  "name": "background-only",
+  "name": "hillshading-contourlines",
   "sources": {
     "mapbox-terrain-rgb": {
       "type": "raster-dem",
       "url": "mapbox://mapbox.terrain-rgb"
     },
-    "contour-lines": {
+    "terrain": {
       "type": "vector",
       "url": "mapbox://mapbox.mapbox-terrain-v2"
       }    
   },
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
@@ -34,11 +35,11 @@
     {
       "id": "contour-lines",
       "type": "line",
-      "source": "contour-lines",
+      "source": "terrain",
       "source-layer": "contour",
       "paint": {
         "line-color": "#6f6"
       }      
-    }    
+    }
   ]
 }
