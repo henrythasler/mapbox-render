@@ -37,15 +37,17 @@ style-url | mapbox-url | API-Endpoint
 `mapbox://fonts/mapbox/{fontstack}/{range}.pbf` | `mapbox://fonts/mapbox/Open%20Sans%20Regular%2cArial%20Unicode%20MS%20Regular/0-255.pbf` | `https://api.mapbox.com/fonts/v1/mapbox/Open%20Sans%20Regular%2cArial%20Unicode%20MS%20Regular/0-255.pbf`
 `mapbox://sprites/mapbox/streets-v8` | `mapbox://sprites/mapbox/bright-v8.png` | ``
 
-
-
 ## Testing
+
+The tests use remote resources (e.g. from mapbox-api) so you can't run these tests without an active internet connection.
 
 ### Jest
 
 `npm install --save-dev jest ts-jest @types/jest`
 
 ### Mocha
+
+The tests can also be run with mocha.
 
 `npm install --save-dev mocha ts-node @types/mocha`
 
@@ -55,6 +57,8 @@ style-url | mapbox-url | API-Endpoint
 - https://github.com/consbio/mbgl-renderer
 - https://github.com/klokantech/tileserver-gl
 - https://github.com/mapbox/tilebelt
+- https://docs.mapbox.com/vector-tiles/reference/
+
 
 ## NodeJs/JavaScript References
 

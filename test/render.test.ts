@@ -262,7 +262,7 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
         let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
         let renderParam: render.RenderParameters = {
             center: [center.lng, center.lat],
@@ -310,7 +310,12 @@ describe("Render Tests", function () {
 
 
 describe('Error handling tests', function () {
-
+    let renderParam: render.RenderParameters = {
+        center: [12.63427717, 47.79839469],
+        zoom: 13,
+        width: 256,
+        height: 256
+    };
     it("Try to load a NOT existing style", function () {
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
@@ -334,12 +339,6 @@ describe('Error handling tests', function () {
     });
 
     it("Try to save image to invalid location", async function () {
-        let renderParam: render.RenderParameters = {
-            center: [12.63427717, 47.79839469],
-            zoom: 13,
-            width: 256,
-            height: 256
-        };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
         await mbr.loadStyle("test/assets/local-file.style.json");
@@ -353,13 +352,21 @@ describe('Error handling tests', function () {
         }
     });
 
+    it("Try url that does not exist", async function () {
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+
+        await mbr.loadStyle(`${testAssetsPath}url-not-found.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch(e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message");
+            expect(e.message).to.have.match(/404 - Not Found/);
+        }
+    });
+
     it("Try to use an invalid mapbox-token", async function () {
-        let renderParam: render.RenderParameters = {
-            center: [12.63427717, 47.79839469],
-            zoom: 13,
-            width: 256,
-            height: 256
-        };
         let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.xxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxx" } });
 
         await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
@@ -373,13 +380,21 @@ describe('Error handling tests', function () {
         }
     });
 
-    it("Try to use unknown protocol for", async function () {
-        let renderParam: render.RenderParameters = {
-            center: [12.63427717, 47.79839469],
-            zoom: 13,
-            width: 256,
-            height: 256
-        };
+    it("Try to read empty remote content", async function () {
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+
+        await mbr.loadStyle(`${testAssetsPath}http-empty-response.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch (e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message");
+            expect(e.message).to.have.match(/204 - No Content/);
+        }
+    });    
+
+    it("Try to use unknown protocol for source", async function () {
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
         await mbr.loadStyle(`${testAssetsPath}protocol-error.style.json`);
@@ -391,5 +406,46 @@ describe('Error handling tests', function () {
             expect(e).to.have.property("message", "Unknown type: 0");
         }
     });
+
+    it("Try to read non-existing local file", async function () {
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+
+        await mbr.loadStyle(`${testAssetsPath}local-file-not-found.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch(e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message", "ENOENT: no such file or directory, open \'test/assets/not_available_13_4383_2854.pbf\'");
+        }
+    });
+
+    it("Try to use empty url", async function () {
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+
+        await mbr.loadStyle(`${testAssetsPath}url-empty.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch(e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message", "Invalid Url ");
+        }
+    });
+
+    it("Try to connect to unknown remote port", async function () {
+        let mbr = new render.MapboxRender(mapboxRenderOptions);
+
+        await mbr.loadStyle(`${testAssetsPath}host-not-found.style.json`);
+        try {
+            await mbr.render(renderParam, `${testOutputPath}dummy.png`);
+        }
+        catch(e) {
+            expect(e).to.be.an("Error");
+            expect(e).to.have.property("message", "connect - https://localhost:1: ECONNREFUSED");
+        }
+    });
+
+
 
 });

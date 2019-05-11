@@ -1,0 +1,28 @@
+{
+  "version": 8,
+  "name": "url-not-found",
+  "sources": {
+    "terrain": {
+      "type": "vector",
+      "url": "https://localhost:1"
+      }  
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#fff"
+      }
+    },
+    {
+      "id": "contour-lines",
+      "type": "line",
+      "source": "terrain",
+      "source-layer": "contour",
+      "paint": {
+        "line-color": "#6f6"
+      }      
+    }
+  ]
+}

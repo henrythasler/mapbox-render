@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "name": "url-empty",
+  "sources": {
+    "local": {
+      "type": "vector",
+      "tiles": [
+        ""
+      ],
+      "bounds": [
+        12.61230469,
+        47.78363486,
+        12.65624966,
+        47.81315452
+      ],
+      "minzoom": 13,
+      "maxzoom": 13
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#000"
+      }
+    },
+    {
+      "id": "landuse",
+      "type": "fill",
+      "source": "local",
+      "source-layer": "landuse",
+      "paint": {
+        "fill-color": "#00f"
+      }
+    },
+    {
+      "id": "roads",
+      "type": "line",
+      "source": "local",
+      "source-layer": "roads",
+      "paint": {
+        "line-color": "#0f0",
+        "line-width": 2
+      }
+    },
+    {
+      "id": "label",
+      "type": "circle",
+      "source": "local",
+      "source-layer": "label",
+      "paint": {
+        "circle-color": "#f00",
+        "circle-radius": 4
+      }
+    }    
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": 8,
+  "name": "http-empty-response",
+  "sources": {
+    "terrain": {
+      "type": "vector",
+      "url": "https://httpstat.us/204"
+      }  
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#fff"
+      }
+    },
+    {
+      "id": "contour-lines",
+      "type": "line",
+      "source": "terrain",
+      "source-layer": "contour",
+      "paint": {
+        "line-color": "#6f6"
+      }      
+    }
+  ]
+}

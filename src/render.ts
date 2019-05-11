@@ -80,8 +80,7 @@ export class MapboxRender {
         this.debug(`${mapSourceRequest.kind} ${mapSourceRequest.url}\n => ${resolvedUrl.type} ${resolvedUrl.url}`);
 
         if (resolvedUrl.url.length === 0) {
-            this.debug(`Unknown URL: ${mapSourceRequest.url}`)
-            callback(new Error(`Unknown UrlType ${mapSourceRequest.url}`));
+            callback(new Error(`Invalid Url ${mapSourceRequest.url}`));
         }
         else {
             if (resolvedUrl.type === UrlType.http) {
@@ -128,13 +127,7 @@ export class MapboxRender {
                     };
                     callback(null, mapSourceResponse);
                 } catch (err) {
-                    let mapSourceResponse: mbgl.MapSourceResponse = {
-                        modified: undefined,
-                        expires: undefined,
-                        etag: undefined,
-                        data: new Buffer("")
-                    };
-                    callback(null, mapSourceResponse);
+                    callback(err);   
                 }
             }
             else callback(new Error(`Unknown type: ${resolvedUrl.type}`));
@@ -180,49 +173,23 @@ export class MapboxRender {
 
 
     /** Evaluate type of given url
-     *  Mapbox-URLs are of the form `mapbox://<mapid>`
-     *  For vector-tiles <mapid> is one of
-     *      `mapbox.mapbox-streets-v8`
-     *      `mapbox.mapbox-terrain-v2`
-     *      `mapbox.mapbox-traffic-v1`
-     *      `mapbox.enterprise-boundaries-XX-YY`
-     * 
-     * deprecated:
-     *      `mapbox.mapbox-streets-v7`
-     *      `mapbox.mapbox-streets-v6`
-     *      `mapbox.mapbox-streets-v5`
-     * 
-     *  For 
-     * 
-     *  see `https://docs.mapbox.com/vector-tiles/reference/` for a description.
-     * 
      * @param url URL to evaluate
      * @return Protocol that is defined by the URL
     */
     private getUrlType(url: string): UrlType {
-        // let typeMap:object = {
-        //     "mapbox://tiles": UrlType.mapboxTile,
-        //     "mapbox://fonts": UrlType.mapboxFont
-        //     "mapbox://": UrlType.mapbox
-        // }
-        // FIXME: Use a map with regex or something
-        if (url.startsWith("mapbox://tiles")) {
-            return UrlType.mapboxTile
+        var UrlTypes : { [pattern:string]:UrlType; } = {
+            "mapbox:\/\/mapbox": UrlType.mapbox,
+            "mapbox:\/\/tiles": UrlType.mapboxTile,
+            "mapbox:\/\/fonts": UrlType.mapboxFont,
+            "mapbox:\/\/sprites": UrlType.mapboxSprite,
+            "http": UrlType.http,
+            "file:\/\/": UrlType.file,
         }
-        else if (url.startsWith("mapbox://fonts")) {
-            return UrlType.mapboxFont;
-        }
-        else if (url.startsWith("mapbox://sprites")) {
-            return UrlType.mapboxSprite;
-        }
-        else if (url.startsWith("mapbox://")) {
-            return UrlType.mapbox;
-        }
-        else if (url.startsWith('http')) {
-            return UrlType.http
-        }
-        else if (url.startsWith('file://')) {
-            return UrlType.file
+
+        for (let item in UrlTypes) {
+            if (url.startsWith(item)) {
+                return UrlTypes[item];
+            }
         }
         return UrlType.unknown
     }
