@@ -45,13 +45,24 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 exports.__esModule = true;
-var util = require("util");
-var fs = require("fs");
-var mbgl = require("@mapbox/mapbox-gl-native");
-var sharp = require("sharp");
-var requestPromise = require("request-promise-native");
-var URL = require("url-parse");
+var util = __importStar(require("util"));
+var fs = __importStar(require("fs"));
+var mbgl = __importStar(require("@mapbox/mapbox-gl-native"));
+var sharp_1 = __importDefault(require("sharp"));
+var request_promise_native_1 = __importDefault(require("request-promise-native"));
+var url_parse_1 = __importDefault(require("url-parse"));
+// import * as package from '../package.json';
 var asyncReadFile = util.promisify(fs.readFile);
 var UrlType;
 (function (UrlType) {
@@ -76,15 +87,14 @@ var MapboxRender = /** @class */ (function () {
         this.originShift = 2 * Math.PI * 6378137 / 2.0;
         // protected asyncRender: any;
         this.handleRequest = function (mapSourceRequest, callback) { return __awaiter(_this, void 0, void 0, function () {
-            var resolvedUrl, responseData, mapSourceResponse, err_1, data, mapSourceResponse, err_2, mapSourceResponse;
+            var resolvedUrl, responseData, mapSourceResponse, err_1, data, mapSourceResponse, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         resolvedUrl = this.resolveUrl(mapSourceRequest.url);
                         this.debug(mapSourceRequest.kind + " " + mapSourceRequest.url + "\n => " + resolvedUrl.type + " " + resolvedUrl.url);
                         if (!(resolvedUrl.url.length === 0)) return [3 /*break*/, 1];
-                        this.debug("Unknown URL: " + mapSourceRequest.url);
-                        callback(new Error("Unknown UrlType " + mapSourceRequest.url));
+                        callback(new Error("Invalid Url " + mapSourceRequest.url));
                         return [3 /*break*/, 12];
                     case 1:
                         if (!(resolvedUrl.type === UrlType.http)) return [3 /*break*/, 6];
@@ -92,7 +102,7 @@ var MapboxRender = /** @class */ (function () {
                     case 2:
                         _a.trys.push([2, 4, , 5]);
                         this.debug("READING: " + resolvedUrl.url);
-                        return [4 /*yield*/, requestPromise({
+                        return [4 /*yield*/, request_promise_native_1["default"]({
                                 url: resolvedUrl.url,
                                 encoding: null,
                                 gzip: true,
@@ -144,13 +154,7 @@ var MapboxRender = /** @class */ (function () {
                         return [3 /*break*/, 10];
                     case 9:
                         err_2 = _a.sent();
-                        mapSourceResponse = {
-                            modified: undefined,
-                            expires: undefined,
-                            etag: undefined,
-                            data: new Buffer("")
-                        };
-                        callback(null, mapSourceResponse);
+                        callback(err_2);
                         return [3 /*break*/, 10];
                     case 10: return [3 /*break*/, 12];
                     case 11:
@@ -187,49 +191,22 @@ var MapboxRender = /** @class */ (function () {
         throw error;
     };
     /** Evaluate type of given url
-     *  Mapbox-URLs are of the form `mapbox://<mapid>`
-     *  For vector-tiles <mapid> is one of
-     *      `mapbox.mapbox-streets-v8`
-     *      `mapbox.mapbox-terrain-v2`
-     *      `mapbox.mapbox-traffic-v1`
-     *      `mapbox.enterprise-boundaries-XX-YY`
-     *
-     * deprecated:
-     *      `mapbox.mapbox-streets-v7`
-     *      `mapbox.mapbox-streets-v6`
-     *      `mapbox.mapbox-streets-v5`
-     *
-     *  For
-     *
-     *  see `https://docs.mapbox.com/vector-tiles/reference/` for a description.
-     *
      * @param url URL to evaluate
      * @return Protocol that is defined by the URL
     */
     MapboxRender.prototype.getUrlType = function (url) {
-        // let typeMap:object = {
-        //     "mapbox://tiles": UrlType.mapboxTile,
-        //     "mapbox://fonts": UrlType.mapboxFont
-        //     "mapbox://": UrlType.mapbox
-        // }
-        // FIXME: Use a map with regex or something
-        if (url.startsWith("mapbox://tiles")) {
-            return UrlType.mapboxTile;
-        }
-        else if (url.startsWith("mapbox://fonts")) {
-            return UrlType.mapboxFont;
-        }
-        else if (url.startsWith("mapbox://sprites")) {
-            return UrlType.mapboxSprite;
-        }
-        else if (url.startsWith("mapbox://")) {
-            return UrlType.mapbox;
-        }
-        else if (url.startsWith('http')) {
-            return UrlType.http;
-        }
-        else if (url.startsWith('file://')) {
-            return UrlType.file;
+        var UrlTypes = {
+            "mapbox:\/\/mapbox": UrlType.mapbox,
+            "mapbox:\/\/tiles": UrlType.mapboxTile,
+            "mapbox:\/\/fonts": UrlType.mapboxFont,
+            "mapbox:\/\/sprites": UrlType.mapboxSprite,
+            "http": UrlType.http,
+            "file:\/\/": UrlType.file
+        };
+        for (var item in UrlTypes) {
+            if (url.startsWith(item)) {
+                return UrlTypes[item];
+            }
         }
         return UrlType.unknown;
     };
@@ -249,7 +226,7 @@ var MapboxRender = /** @class */ (function () {
             case UrlType.mapboxTile:
             case UrlType.mapboxFont:
             case UrlType.mapboxSprite:
-                var urlObject = new URL(url, true);
+                var urlObject = new url_parse_1["default"](url, true);
                 // this.debug(urlObject);
                 if (resolvedUrl.type === UrlType.mapboxTile) {
                     // combine given query string with access_token and secury-property. Given properties are preserved
@@ -391,7 +368,7 @@ var MapboxRender = /** @class */ (function () {
                                 reject(err);
                             }
                             _this.map.release();
-                            var image = sharp(buffer, {
+                            var image = sharp_1["default"](buffer, {
                                 raw: {
                                     width: param.width * _this.mapOptions.ratio,
                                     height: param.height * _this.mapOptions.ratio,

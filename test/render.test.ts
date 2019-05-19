@@ -1,4 +1,5 @@
 import * as render from "../src/render";
+import { Geometry, Wgs84} from "../src/geometry";
 import { expect } from "chai";
 
 /** You can easily switch between jest and mocha. Just use the right import below. 
@@ -15,157 +16,12 @@ const testAssetsPath = "test/assets/";
 const testOutputPath = "test/out/";
 
 const mapboxRenderOptions: render.MapboxRenderOptions = {
-    styleUrl: "",
+    styleUrl: "test/assets/background-only.style.json",
     debug: false,
     accessToken: ""
 };
 
-describe("Coordinate Transformation Tests", function () {
-    it("getWGS84FromMercator with zeros", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getWGS84FromMercator({ x: 0, y: 0 })
-        expect(pos).to.include({ "lng": 0, "lat": 0 });
-    });
-
-    it("getWGS84FromMercator with positive values", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getWGS84FromMercator({ x: 1252344, y: 6105178 })
-        expect(pos).to.have.property("lng");
-        expect(pos).to.have.property("lat");
-        expect(pos.lng).to.be.closeTo(11.249999999999993, 0.00001)
-        expect(pos.lat).to.be.closeTo(47.989921667414194, 0.00001)
-    });
-
-    it("getWGS84FromMercator with negative values", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getWGS84FromMercator({ x: -7604567, y: -7330617 })
-        expect(pos).to.have.property("lng");
-        expect(pos).to.have.property("lat");
-        expect(pos.lng).to.be.closeTo(-68.31298828125001, 0.00001)
-        expect(pos.lat).to.be.closeTo(-54.838663612975104, 0.00001)
-    });
-
-    it("getWGS84FromMercator projected bounds", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getWGS84FromMercator({ x: -20037508.342789, y: 20037508.342789 })
-        expect(pos).to.have.property("lng");
-        expect(pos).to.have.property("lat");
-        expect(pos.lng).to.be.closeTo(-180, 0.00001)
-        expect(pos.lat).to.be.closeTo(85.051129, 0.00001)
-    });
-
-    it("getMercatorFromPixels at Null-Island", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getMercatorFromPixels({ x: 256, y: 256 }, 1)
-        expect(pos).to.have.property("x");
-        expect(pos).to.have.property("y");
-        expect(pos.x).to.be.closeTo(0, 0.00001)
-        expect(pos.y).to.be.closeTo(0, 0.00001)
-    });
-
-    it("getMercatorFromPixels #1", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getMercatorFromPixels({ x: 0, y: 0 }, 1)
-        expect(pos).to.have.property("x");
-        expect(pos).to.have.property("y");
-        expect(pos.x, "pos.x").to.be.closeTo(-20037508.342789, 0.00001)
-        expect(pos.y, "pos.y").to.be.closeTo(20037508.342789, 0.00001)
-    });
-
-    it("getMercatorFromPixels #2", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let pos = mbr.getMercatorFromPixels({ x: 1301248, y: 2864384 }, 14)
-        expect(pos).to.have.property("x");
-        expect(pos).to.have.property("y");
-        expect(pos.x, "pos.x").to.be.closeTo(-7604567.070035616, 0.00001)
-        expect(pos.y, "pos.y").to.be.closeTo(-7330616.760661542, 0.00001)
-    });
-
-    it("getMercatorTileBounds #1", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let bound = mbr.getMercatorTileBounds({ x: 0, y: 0 }, 1)
-        expect(bound).to.have.property("leftbottom");
-        expect(bound).to.have.property("righttop");
-        expect(bound.leftbottom.x, "bound.leftbottom.x").to.be.closeTo(-20037508.342789, 0.00001)
-        expect(bound.leftbottom.y, "bound.leftbottom.y").to.be.closeTo(0, 0.00001)
-        expect(bound.righttop.x, "bound.righttop.x").to.be.closeTo(0, 0.00001)
-        expect(bound.righttop.y, "bound.righttop.y").to.be.closeTo(20037508.342789, 0.00001)
-    });
-
-    it("getMercatorTileBounds #2", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let bound = mbr.getMercatorTileBounds({ x: 5083, y: 11188 }, 14)
-        expect(bound).to.have.property("leftbottom");
-        expect(bound).to.have.property("righttop");
-        expect(bound.leftbottom.x, "bound.leftbottom.x").to.be.closeTo(-7604567.070035616, 0.00001)
-        expect(bound.leftbottom.y, "bound.leftbottom.y").to.be.closeTo(-7330616.760661542, 0.00001)
-        expect(bound.righttop.x, "bound.righttop.x").to.be.closeTo(-7602121.08513049, 0.00001)
-        expect(bound.righttop.y, "bound.righttop.y").to.be.closeTo(-7328170.775756419, 0.00001)
-    });
-
-    it("getWGS84TileBounds #1", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let bound = mbr.getWGS84TileBounds({ x: 0, y: 0 }, 1)
-        expect(bound).to.have.property("leftbottom");
-        expect(bound).to.have.property("righttop");
-        expect(bound.leftbottom.lng, "bound.leftbottom.lng").to.be.closeTo(-180, 0.00001)
-        expect(bound.leftbottom.lat, "bound.leftbottom.lat").to.be.closeTo(0, 0.00001)
-        expect(bound.righttop.lng, "bound.righttop.lng").to.be.closeTo(0, 0.00001)
-        expect(bound.righttop.lat, "bound.righttop.lat").to.be.closeTo(85.051129, 0.00001)
-    });
-
-    it("getWGS84TileBounds #2", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let bound = mbr.getWGS84TileBounds({ x: 272, y: 177 }, 9)
-        expect(bound).to.have.property("leftbottom");
-        expect(bound).to.have.property("righttop");
-        expect(bound.leftbottom.lng, "bound.leftbottom.lng").to.be.closeTo(11.25, 0.00001)
-        expect(bound.leftbottom.lat, "bound.leftbottom.lat").to.be.closeTo(47.98992189, 0.00001)
-        expect(bound.righttop.lng, "bound.righttop.lng").to.be.closeTo(11.95312466, 0.00001)
-        expect(bound.righttop.lat, "bound.righttop.lat").to.be.closeTo(48.45835188, 0.00001)
-    });
-
-    it("getWGS84TileBounds #3", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let bound = mbr.getWGS84TileBounds({ x: 4383, y: 2854 }, 13)
-        expect(bound).to.have.property("leftbottom");
-        expect(bound).to.have.property("righttop");
-        expect(bound.leftbottom.lng, "bound.leftbottom.lng").to.be.closeTo(12.61230469, 0.00001)
-        expect(bound.leftbottom.lat, "bound.leftbottom.lat").to.be.closeTo(47.78363486, 0.00001)
-        expect(bound.righttop.lng, "bound.righttop.lng").to.be.closeTo(12.65624966, 0.00001)
-        expect(bound.righttop.lat, "bound.righttop.lat").to.be.closeTo(47.81315452, 0.00001)
-    });
-
-    it("getWGS84TileBounds #4", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let bound = mbr.getWGS84TileBounds({ x: 5, y: 10 }, 10)
-        expect(bound).to.have.property("leftbottom");
-        expect(bound).to.have.property("righttop");
-        expect(bound.leftbottom.lng, "bound.leftbottom.lng").to.be.closeTo(-178.242187, 0.00001)
-        expect(bound.leftbottom.lat, "bound.leftbottom.lat").to.be.closeTo(84.706049, 0.00001)
-        expect(bound.righttop.lng, "bound.righttop.lng").to.be.closeTo(-177.890625, 0.00001)
-        expect(bound.righttop.lat, "bound.righttop.lat").to.be.closeTo(84.738387, 0.00001)
-    });
-
-    it("getWGS84TileCenter #1", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let center = mbr.getWGS84TileCenter({ x: 0, y: 0 }, 0)
-        expect(center).to.have.property("lng");
-        expect(center).to.have.property("lat");
-        expect(center.lng, "center.lng").to.be.closeTo(0, 0.00001)
-        expect(center.lat, "center.lat").to.be.closeTo(0, 0.00001)
-    });
-
-    it("getWGS84TileCenter #2", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
-        let center = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
-        expect(center).to.have.property("lng");
-        expect(center).to.have.property("lat");
-        expect(center.lng, "center.lng").to.be.closeTo(12.63427717, 0.00001)
-        expect(center.lat, "center.lat").to.be.closeTo(47.79839469, 0.00001)
-    });
-})
-
+const geom = new Geometry();
 
 describe("Render Tests", function () {
     it("load a mapbox style", function () {
@@ -182,7 +38,7 @@ describe("Render Tests", function () {
         };
         let mbr = new render.MapboxRender(mapboxRenderOptions);
 
-        await mbr.loadStyle(`${testAssetsPath}background-only.style.json`);
+        await mbr.loadStyle();
         await mbr.render(renderParam, `${testOutputPath}background-only.png`);
         let specimen = await sharp(`${testOutputPath}background-only.png`).metadata();
         expect(specimen).to.include({ "format": "png", "width": 256, "height": 256, "channels": 4 });
@@ -239,7 +95,7 @@ describe("Render Tests", function () {
         let height: number = 512;
 
         let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
-        let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 1093, y: 715 }, 11)
+        let center: Wgs84 = geom.getWGS84TileCenter({ x: 1093, y: 715 }, 11)
         let renderParam: render.RenderParameters = {
             center: [center.lng, center.lat],
             zoom: 11,
@@ -262,8 +118,8 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
-        let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let center: Wgs84 = geom.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
         let renderParam: render.RenderParameters = {
             center: [center.lng, center.lat],
             zoom: 13,
@@ -282,12 +138,38 @@ describe("Render Tests", function () {
         expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
     });
 
+    // this test fails with "@mapbox/mapbox-gl-native": "4.1.0"
+    // see https://github.com/mapbox/mapbox-gl-native/issues/14532
+    it("render text and icons from external mapbox ressources with format-expression", async function () {
+        let width: number = 512;
+        let height: number = 512;
+
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let center: Wgs84 = geom.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
+        let renderParam: render.RenderParameters = {
+            center: [center.lng, center.lat],
+            zoom: 13,
+            width: width,
+            height: height
+        };
+
+        await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs-format.style.json`);
+        await mbr.render(renderParam, `${testOutputPath}text-icons-format.png`);
+
+        let specimen = await sharp(`${testOutputPath}text-icons-format.png`).raw().toBuffer();
+        let reference = await sharp(`${testAssetsPath}text-icons-golden.png`).raw().toBuffer();
+        let diff = await sharp({ create: { width: width, height: height, channels: 4, background: "#000" } }).raw().toBuffer();
+        let mismatchedPixels = pixelmatch(specimen, reference, diff, width, height);
+        await sharp(diff, { raw: { width: width, height: height, channels: 4 } }).png().toFile(`${testOutputPath}text-icons-format-golden-diff.png`);
+        // expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
+    });
+
     it("render text and icons from external mapbox ressources with x2 scaling", async function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ratio: 2, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
-        let center: render.WGS84 = mbr.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ ratio: 2, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let center: Wgs84 = geom.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
         let renderParam: render.RenderParameters = {
             center: [center.lng, center.lat],
             zoom: 13,
@@ -300,9 +182,9 @@ describe("Render Tests", function () {
 
         let specimen = await sharp(`${testOutputPath}text-icons@2.png`).raw().toBuffer();
         let reference = await sharp(`${testAssetsPath}text-icons@2-golden.png`).raw().toBuffer();
-        let diff = await sharp({ create: { width: 2*width, height: 2*height, channels: 4, background: "#000" } }).raw().toBuffer();
-        let mismatchedPixels = pixelmatch(specimen, reference, diff, 2*width, 2*height);
-        await sharp(diff, { raw: { width: 2*width, height: 2*height, channels: 4 } }).png().toFile(`${testOutputPath}text-icons@2-golden-diff.png`);
+        let diff = await sharp({ create: { width: 2 * width, height: 2 * height, channels: 4, background: "#000" } }).raw().toBuffer();
+        let mismatchedPixels = pixelmatch(specimen, reference, diff, 2 * width, 2 * height);
+        await sharp(diff, { raw: { width: 2 * width, height: 2 * height, channels: 4 } }).png().toFile(`${testOutputPath}text-icons@2-golden-diff.png`);
         expect(mismatchedPixels, "mismatchedPixels").to.be.closeTo(0, 5);
     });
 
@@ -353,13 +235,13 @@ describe('Error handling tests', function () {
     });
 
     it("Try url that does not exist", async function () {
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
 
         await mbr.loadStyle(`${testAssetsPath}url-not-found.style.json`);
         try {
             await mbr.render(renderParam, `${testOutputPath}dummy.png`);
         }
-        catch(e) {
+        catch (e) {
             expect(e).to.be.an("Error");
             expect(e).to.have.property("message");
             expect(e.message).to.have.match(/404 - Not Found/);
@@ -373,7 +255,7 @@ describe('Error handling tests', function () {
         try {
             await mbr.render(renderParam, `${testOutputPath}dummy.png`);
         }
-        catch(e) {
+        catch (e) {
             expect(e).to.be.an("Error");
             expect(e).to.have.property("message");
             expect(e.message).to.have.match(/401 - Unauthorized/);
@@ -392,7 +274,7 @@ describe('Error handling tests', function () {
             expect(e).to.have.property("message");
             expect(e.message).to.have.match(/204 - No Content/);
         }
-    });    
+    });
 
     it("Try to use unknown protocol for source", async function () {
         let mbr = new render.MapboxRender(mapboxRenderOptions);
@@ -401,7 +283,7 @@ describe('Error handling tests', function () {
         try {
             await mbr.render(renderParam, `${testOutputPath}dummy.png`);
         }
-        catch(e) {
+        catch (e) {
             expect(e).to.be.an("Error");
             expect(e).to.have.property("message", "Unknown type: 0");
         }
@@ -414,7 +296,7 @@ describe('Error handling tests', function () {
         try {
             await mbr.render(renderParam, `${testOutputPath}dummy.png`);
         }
-        catch(e) {
+        catch (e) {
             expect(e).to.be.an("Error");
             expect(e).to.have.property("message", "ENOENT: no such file or directory, open \'test/assets/not_available_13_4383_2854.pbf\'");
         }
@@ -427,7 +309,7 @@ describe('Error handling tests', function () {
         try {
             await mbr.render(renderParam, `${testOutputPath}dummy.png`);
         }
-        catch(e) {
+        catch (e) {
             expect(e).to.be.an("Error");
             expect(e).to.have.property("message", "Invalid Url ");
         }
@@ -440,7 +322,7 @@ describe('Error handling tests', function () {
         try {
             await mbr.render(renderParam, `${testOutputPath}dummy.png`);
         }
-        catch(e) {
+        catch (e) {
             expect(e).to.be.an("Error");
             expect(e).to.have.property("message", "connect - https://localhost:1: ECONNREFUSED");
         }

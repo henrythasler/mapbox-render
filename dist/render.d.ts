@@ -59,22 +59,6 @@ export declare class MapboxRender {
     */
     private error;
     /** Evaluate type of given url
-     *  Mapbox-URLs are of the form `mapbox://<mapid>`
-     *  For vector-tiles <mapid> is one of
-     *      `mapbox.mapbox-streets-v8`
-     *      `mapbox.mapbox-terrain-v2`
-     *      `mapbox.mapbox-traffic-v1`
-     *      `mapbox.enterprise-boundaries-XX-YY`
-     *
-     * deprecated:
-     *      `mapbox.mapbox-streets-v7`
-     *      `mapbox.mapbox-streets-v6`
-     *      `mapbox.mapbox-streets-v5`
-     *
-     *  For
-     *
-     *  see `https://docs.mapbox.com/vector-tiles/reference/` for a description.
-     *
      * @param url URL to evaluate
      * @return Protocol that is defined by the URL
     */

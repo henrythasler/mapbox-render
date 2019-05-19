@@ -5,11 +5,11 @@ var mapboxRenderOptions = {
     styleUrl: "data/cyclemap-simple.json",
     accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg",
     debug: true,
-    ratio: 2
+    ratio: 1
 };
 var mbr = new render.MapboxRender(mapboxRenderOptions);
 var renderParam = {
-    center: [12.75491, 47.75418],
+    center: [11.5757, 47.8399],
     zoom: 14,
     width: 512,
     height: 512

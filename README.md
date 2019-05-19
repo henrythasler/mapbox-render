@@ -10,7 +10,7 @@ The main purpose is to render raster tiles for offline/mobile use from my Mapbox
 
 ## Typescript interface for mapbox-gl-native
 
-There is none... So I created one on my own, based on the information available via Mapbox's github repo.
+There is none... So I created my own, based on the information available via Mapbox's github repo. It's far from complete and doesn't expose the EventEmitter interface yet.
 
 ## Build & Run application
 

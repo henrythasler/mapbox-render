@@ -7,10 +7,10 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/src/render.ts",
+            "name": "Launch Example",
+            "program": "${workspaceFolder}/example/static-image.ts",
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
+                "${workspaceFolder}/example/**/*.js"
             ]            
         }
     ]
