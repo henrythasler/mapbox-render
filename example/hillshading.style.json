@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "name": "hillshading-contourlines",
+  "sources": {
+    "mapbox-terrain-rgb": {
+      "type": "raster-dem",
+      "url": "mapbox://mapbox.terrain-rgb"
+    },
+    "terrain": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-terrain-v2"
+    }
+  },
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#f6f4e7"
+      }
+    },
+    {
+      "id": "hillshading",
+      "source": "mapbox-terrain-rgb",
+      "type": "hillshade",
+      "paint": {
+        "hillshade-illumination-direction": 315,
+        "hillshade-exaggeration": 1,
+        "hillshade-shadow-color": "#000",
+        "hillshade-highlight-color": "#fff",
+        "hillshade-accent-color": "#000"
+      }
+    },
+    {
+      "id": "contour-lines",
+      "type": "line",
+      "source": "terrain",
+      "source-layer": "contour",
+      "paint": {
+        "line-color": "rgba(128, 64, 0, 0.5)"
+      }
+    }
+  ]
+}

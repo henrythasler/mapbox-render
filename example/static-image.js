@@ -1,22 +1,22 @@
 "use strict";
 exports.__esModule = true;
-var render = require("../dist/render.js");
+var render = require("../dist/index");
 var mapboxRenderOptions = {
-    styleUrl: "data/cyclemap-simple.json",
+    styleUrl: "",
     accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg",
     debug: true,
     ratio: 1
 };
 var mbr = new render.MapboxRender(mapboxRenderOptions);
 var renderParam = {
-    center: [11.5757, 47.8399],
-    zoom: 14,
+    center: [11.6, 47.28],
+    zoom: 11,
     width: 512,
     height: 512
 };
-mbr.loadStyle("example/cyclemap-simple.json")
+mbr.loadStyle("example/hillshading.style.json")
     .then(function () {
-    mbr.render(renderParam, "example/image.png")
+    mbr.render(renderParam, "example/hillshading.png")
         .then(function () {
         console.log("done");
     })["catch"](function (err) {

@@ -11,7 +11,8 @@
     "example:watch": "tsc -p tsconfig.dist.json --watch",
     "static-image": "node example/static-image.js",
     "test:mocha": "mocha --exit --reporter spec -r ts-node/register test/**/render.test.ts",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "docs": "node node_modules/typedoc/bin/typedoc"
   },
   "bin": {},
   "dependencies": {
@@ -22,6 +23,7 @@
     "url-parse": "^1.4.3"
   },
   "devDependencies": {
+    "@babel/types": "^7.4.4",
     "@types/chai": "^4.1.7",
     "@types/jest": "^24.0.12",
     "@types/pixelmatch": "^4.0.0",
@@ -31,11 +33,11 @@
     "chai": "^4.2.0",
     "dts-gen": "^0.5.7",
     "jest": "^24.8.0",
-    "jsdoc": "^3.5.5",
     "pixelmatch": "^4.0.2",
     "source-map-support": "^0.5.12",
     "ts-jest": "^24.0.2",
     "ts-node": "^8.1.0",
+    "typedoc": "^0.14.2",
     "typescript": "^3.4.5"
   },
   "repository": "https://github.com/henrythasler/mapbox-render"

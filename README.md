@@ -17,12 +17,8 @@ There is none... So I created my own, based on the information available via Map
 Enable autobuild:
 `tsc -p . --watch`
 
-Run application:
-`nodejs build/render.js`
-
-## Type generation
-
-`nodejs node_modules/dts-gen/bin/lib/run.js`
+Run sample application:
+`npm start`
 
 ## Resolving Map Sources
 
@@ -51,6 +47,10 @@ The tests can also be run with mocha.
 
 `npm install --save-dev mocha ts-node @types/mocha`
 
+## References
+
+The following links have helped a great deal to understand several technical concepts.
+
 ## Mapbox References
 
 - https://github.com/mapbox/mapbox-gl-native/tree/master/platform/node
@@ -70,16 +70,22 @@ The tests can also be run with mocha.
 
 ## Typescript References
 
+- https://github.com/Microsoft/TypeScript/wiki
 - https://github.com/Microsoft/TypeScript-Node-Starter
 - https://www.tutorialsteacher.com/typescript
 - https://blog.bitsrc.io/keep-your-promises-in-typescript-using-async-await-7bdc57041308
 - https://tutorialedge.net/typescript/async-await-in-typescript-tutorial/
 - https://code.visualstudio.com/docs/typescript/typescript-debugging
+- https://blog.atomist.com/typescript-imports/
 
 ## Testing References
 
 - https://journal.artfuldev.com/unit-testing-node-applications-with-typescript-using-mocha-and-chai-384ef05f32b2
 - https://mochajs.org/#getting-started
+
+## Documentation References
+
+- https://typedoc.org/
 
 ## Geospatial References
 

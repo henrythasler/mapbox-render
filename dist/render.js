@@ -45,24 +45,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 exports.__esModule = true;
-var util = __importStar(require("util"));
-var fs = __importStar(require("fs"));
-var mbgl = __importStar(require("@mapbox/mapbox-gl-native"));
-var sharp_1 = __importDefault(require("sharp"));
-var request_promise_native_1 = __importDefault(require("request-promise-native"));
-var url_parse_1 = __importDefault(require("url-parse"));
-// import * as package from '../package.json';
+var util = require("util");
+var fs = require("fs");
+var mbgl = require("@mapbox/mapbox-gl-native");
+var sharp = require("sharp");
+var requestPromise = require("request-promise-native");
+var URL = require("url-parse");
 var asyncReadFile = util.promisify(fs.readFile);
 var UrlType;
 (function (UrlType) {
@@ -84,7 +73,6 @@ var MapboxRender = /** @class */ (function () {
     function MapboxRender(options) {
         var _this = this;
         this.style = "";
-        this.originShift = 2 * Math.PI * 6378137 / 2.0;
         // protected asyncRender: any;
         this.handleRequest = function (mapSourceRequest, callback) { return __awaiter(_this, void 0, void 0, function () {
             var resolvedUrl, responseData, mapSourceResponse, err_1, data, mapSourceResponse, err_2;
@@ -102,7 +90,7 @@ var MapboxRender = /** @class */ (function () {
                     case 2:
                         _a.trys.push([2, 4, , 5]);
                         this.debug("READING: " + resolvedUrl.url);
-                        return [4 /*yield*/, request_promise_native_1["default"]({
+                        return [4 /*yield*/, requestPromise({
                                 url: resolvedUrl.url,
                                 encoding: null,
                                 gzip: true,
@@ -226,7 +214,7 @@ var MapboxRender = /** @class */ (function () {
             case UrlType.mapboxTile:
             case UrlType.mapboxFont:
             case UrlType.mapboxSprite:
-                var urlObject = new url_parse_1["default"](url, true);
+                var urlObject = new URL(url, true);
                 // this.debug(urlObject);
                 if (resolvedUrl.type === UrlType.mapboxTile) {
                     // combine given query string with access_token and secury-property. Given properties are preserved
@@ -270,45 +258,6 @@ var MapboxRender = /** @class */ (function () {
                 break;
         }
         return resolvedUrl;
-    };
-    /** Converts XY point from Pseudo-Mercator (https://epsg.io/3857) to WGS84 (https://epsg.io/4326) */
-    MapboxRender.prototype.getWGS84FromMercator = function (pos) {
-        var lon = (pos.x / this.originShift) * 180.0;
-        var lat = (pos.y / this.originShift) * 180.0;
-        lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
-        return { lng: lon, lat: lat };
-    };
-    /** Converts pixel coordinates (Origin is top-left) in given zoom level of pyramid to EPSG:900913 */
-    MapboxRender.prototype.getMercatorFromPixels = function (pos, zoom, tileSize) {
-        if (tileSize === void 0) { tileSize = 256; }
-        // zoom = Math.max(0, zoom + 1 - tileSize / 256)
-        var res = 2 * Math.PI * 6378137 / tileSize / Math.pow(2, zoom);
-        return { x: pos.x * res - this.originShift, y: this.originShift - pos.y * res };
-    };
-    /** Returns bounds of the given tile in Pseudo-Mercator (https://epsg.io/3857) coordinates */
-    MapboxRender.prototype.getMercatorTileBounds = function (tile, zoom, tileSize) {
-        if (tileSize === void 0) { tileSize = 256; }
-        var leftbottom = this.getMercatorFromPixels({ x: tile.x * tileSize, y: (tile.y + 1) * tileSize }, zoom, tileSize);
-        var righttop = this.getMercatorFromPixels({ x: (tile.x + 1) * tileSize, y: tile.y * tileSize }, zoom, tileSize);
-        return ({ leftbottom: leftbottom, righttop: righttop });
-    };
-    /** Returns bounds of the given tile in WGS84 (https://epsg.io/4326) coordinates */
-    MapboxRender.prototype.getWGS84TileBounds = function (tile, zoom, tileSize) {
-        if (tileSize === void 0) { tileSize = 256; }
-        var bounds = this.getMercatorTileBounds(tile, zoom, tileSize);
-        return {
-            leftbottom: this.getWGS84FromMercator(bounds.leftbottom),
-            righttop: this.getWGS84FromMercator(bounds.righttop)
-        };
-    };
-    /** Returns center of the given tile in WGS84 (https://epsg.io/4326) coordinates */
-    MapboxRender.prototype.getWGS84TileCenter = function (tile, zoom, tileSize) {
-        if (tileSize === void 0) { tileSize = 256; }
-        var bounds = this.getWGS84TileBounds(tile, zoom, tileSize);
-        return {
-            lng: (bounds.righttop.lng + bounds.leftbottom.lng) / 2,
-            lat: (bounds.righttop.lat + bounds.leftbottom.lat) / 2
-        };
     };
     /** Set up mapbox-library with a mapbox-style
      * @param styleUrl
@@ -368,7 +317,7 @@ var MapboxRender = /** @class */ (function () {
                                 reject(err);
                             }
                             _this.map.release();
-                            var image = sharp_1["default"](buffer, {
+                            var image = sharp(buffer, {
                                 raw: {
                                     width: param.width * _this.mapOptions.ratio,
                                     height: param.height * _this.mapOptions.ratio,

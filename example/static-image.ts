@@ -1,7 +1,7 @@
-import * as render from "../dist/render.js";
+import * as render from "../dist/index";
 
 let mapboxRenderOptions: render.MapboxRenderOptions = {
-    styleUrl: "data/cyclemap-simple.json",  // see https://en.wikipedia.org/wiki/URL; https://url.spec.whatwg.org/
+    styleUrl: "",
     accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg",
     debug: true,
     ratio: 1
@@ -10,15 +10,15 @@ let mapboxRenderOptions: render.MapboxRenderOptions = {
 let mbr = new render.MapboxRender(mapboxRenderOptions);
 
 let renderParam: render.RenderParameters = {
-    center: [11.5757, 47.8399],
-    zoom: 14,
+    center: [11.6, 47.28],
+    zoom: 11,
     width: 512,
     height: 512
 }
 
-mbr.loadStyle("example/cyclemap-simple.json")
+mbr.loadStyle("example/hillshading.style.json")
     .then(() => {
-        mbr.render(renderParam, "example/image.png")
+        mbr.render(renderParam, "example/hillshading.png")
             .then(() => {
                 console.log("done")
             })

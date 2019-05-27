@@ -6,7 +6,7 @@
         "declaration": true
     },
     "files": [
-        "src/render.ts",
+        "src/index.ts",
     ],
     "include": [
         "src/types/**/*",
