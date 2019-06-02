@@ -1,11 +1,15 @@
 export interface Wgs84 {
-    lng: number, // °
-    lat: number  // °
+    /** in degrees */
+    lng: number,
+    /** in degrees */
+    lat: number
 }
 
 export interface Mercator {
-    x: number,   // m
-    y: number    // m
+    /** in meters */
+    x: number,
+    /** in meters */
+    y: number
 }
 
 export interface Vector {
@@ -74,10 +78,13 @@ export class Projection {
         } as Wgs84)
     }
 
-    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile*/
+    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile
+     * @param tile Top-level tile to start the pyramid; will also be part of the return value
+     * @param depth How many levels the resulting pyramid will have.
+     * @return An array of tiles
+    */
     getTilePyramid(tile: Tile, depth: number = 1): TileList {
         let list: TileList = [];
-        // list.push(tile);
         depth = Math.max(0, depth); // do not allow negative values
         for (let zoom = 0; zoom <= depth; zoom++) {
             for (let y = tile.y * 2 ** zoom; y < (tile.y + 1) * 2 ** zoom; y++) {

@@ -12,7 +12,8 @@
     "static-image": "node example/static-image.js",
     "test:mocha": "mocha --exit --reporter spec -r ts-node/register test/**/render.test.ts",
     "test": "jest --coverage",
-    "docs": "node node_modules/typedoc/bin/typedoc"
+    "docs": "node node_modules/typedoc/bin/typedoc",
+    "benchmark": "tsc test/projection.benchmark.ts && node test/projection.benchmark.js"
   },
   "bin": {},
   "dependencies": {
@@ -24,12 +25,14 @@
   },
   "devDependencies": {
     "@babel/types": "^7.4.4",
+    "@types/benchmark": "^1.0.31",
     "@types/chai": "^4.1.7",
     "@types/jest": "^24.0.12",
     "@types/pixelmatch": "^4.0.0",
     "@types/request-promise-native": "^1.0.7",
     "@types/sharp": "^0.22.0",
     "@types/url-parse": "^1.4.3",
+    "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "dts-gen": "^0.5.7",
     "jest": "^24.8.0",

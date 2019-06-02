@@ -287,30 +287,10 @@ var MapboxRender = /** @class */ (function () {
             });
         });
     };
-    MapboxRender.prototype.render = function (param, outputFile) {
+    MapboxRender.prototype.renderToFile = function (param, outputFile) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
-                // FIXME: find out why that does not work
-                //        var asyncRender = util.promisify(this.map.render);
-                // this.asyncRender(param)
-                //     .then((buffer:any) => {
-                //         this.map.release();
-                //         var image = sharp(buffer, {
-                //             raw: {
-                //                 width: param.width,
-                //                 height: param.height,
-                //                 channels: 4
-                //             }
-                //         });
-                //         // Convert raw image buffer to PNG
-                //         image.toFile('data/image.png', function (err) {
-                //             if (err) throw err;
-                //         });
-                //     })
-                //     .catch((err:Error) => {
-                //         this.debug(err)
-                //     });
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         _this.map.render(param, function (err, buffer) {
                             if (err) {
@@ -331,6 +311,28 @@ var MapboxRender = /** @class */ (function () {
                                 }
                                 resolve(true);
                             });
+                        });
+                    })];
+            });
+        });
+    };
+    MapboxRender.prototype.renderToImage = function (param) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _this.map.render(param, function (err, buffer) {
+                            if (err) {
+                                reject(err);
+                            }
+                            _this.map.release();
+                            resolve(sharp(buffer, {
+                                raw: {
+                                    width: param.width * _this.mapOptions.ratio,
+                                    height: param.height * _this.mapOptions.ratio,
+                                    channels: 4
+                                }
+                            }));
                         });
                     })];
             });

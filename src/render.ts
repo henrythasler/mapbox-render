@@ -245,30 +245,8 @@ export class MapboxRender {
         }
     }
 
-
-    async render(param: RenderParameters, outputFile: string): Promise<boolean | Error> {
-        // FIXME: find out why that does not work
-        //        var asyncRender = util.promisify(this.map.render);
-        // this.asyncRender(param)
-        //     .then((buffer:any) => {
-        //         this.map.release();
-        //         var image = sharp(buffer, {
-        //             raw: {
-        //                 width: param.width,
-        //                 height: param.height,
-        //                 channels: 4
-        //             }
-        //         });
-        //         // Convert raw image buffer to PNG
-        //         image.toFile('data/image.png', function (err) {
-        //             if (err) throw err;
-        //         });
-        //     })
-        //     .catch((err:Error) => {
-        //         this.debug(err)
-        //     });
-
-        return new Promise<boolean>((resolve, reject) => {
+    async renderToFile(param: RenderParameters, outputFile: string): Promise<boolean | Error> {
+        return new Promise<boolean | Error>((resolve, reject) => {
             this.map.render(param, (err, buffer) => {
                 if (err) {
                     reject(err);
@@ -291,44 +269,23 @@ export class MapboxRender {
 
             });
         });
+    }
 
-
-        // try {
-        //     let buffer = await this.asyncRender(param)
-        //     this.map.release();
-        //     var image = sharp(buffer, {
-        //         raw: {
-        //             width: param.width,
-        //             height: param.height,
-        //             channels: 4
-        //         }
-        //     });
-        //     // Convert raw image buffer to PNG
-        //     image.toFile('data/image.png', function (err) {
-        //         if (err) throw err;
-        //     });
-        // } catch (error) {
-        //     console.error(error);
-        // }
-
-
-        // this.loadStyle().then(() => {
-        //     console.log("setup done.");
-        // });
-
-        // Prepare stuff
-        //         Promise.all([
-        //             asyncReadFile(this.options.styleUrl, { encoding: "utf-8" }),
-        //             this.asyncWait(1)
-        //         ]).then((data:any[]) => {
-        //             let message:string;
-        //             [this.style, message] = data
-        //             this.style = data[0]
-        //             this.debug(this.style[0])
-        //             this.debug(message)
-        //         }).catch((err:Error) => {
-        // //            this.error(err)
-        //             console.error(`[Error]: ${err}`)
-        //         });
+    async renderToImage(param: RenderParameters): Promise<sharp.Sharp | Error> {
+        return new Promise<sharp.Sharp | Error>((resolve, reject) => {
+            this.map.render(param, (err, buffer) => {
+                if (err) {
+                    reject(err);
+                }
+                this.map.release();
+                resolve(sharp(buffer, {
+                    raw: {
+                        width: param.width*this.mapOptions.ratio,
+                        height: param.height*this.mapOptions.ratio,
+                        channels: 4
+                    }
+                }));
+            });
+        });
     }
 }

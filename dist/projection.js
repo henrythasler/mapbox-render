@@ -43,11 +43,14 @@ var Projection = /** @class */ (function () {
             lat: (bounds.righttop.lat + bounds.leftbottom.lat) / 2
         };
     };
-    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile*/
+    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile
+     * @param tile Top-level tile to start the pyramid; will also be part of the return value
+     * @param depth How many levels the resulting pyramid will have.
+     * @return An array of tiles
+    */
     Projection.prototype.getTilePyramid = function (tile, depth) {
         if (depth === void 0) { depth = 1; }
         var list = [];
-        // list.push(tile);
         depth = Math.max(0, depth); // do not allow negative values
         for (var zoom = 0; zoom <= depth; zoom++) {
             for (var y = tile.y * Math.pow(2, zoom); y < (tile.y + 1) * Math.pow(2, zoom); y++) {

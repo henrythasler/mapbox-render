@@ -1,4 +1,5 @@
 import * as mbgl from "@mapbox/mapbox-gl-native";
+import * as sharp from "sharp";
 export interface MapboxRenderOptions {
     styleUrl: string;
     accessToken?: string;
@@ -55,5 +56,6 @@ export declare class MapboxRender {
      * @param styleUrl
      */
     loadStyle(styleUrl?: string): Promise<void>;
-    render(param: RenderParameters, outputFile: string): Promise<boolean | Error>;
+    renderToFile(param: RenderParameters, outputFile: string): Promise<boolean | Error>;
+    renderToImage(param: RenderParameters): Promise<sharp.Sharp | Error>;
 }

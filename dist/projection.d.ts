@@ -1,9 +1,13 @@
 export interface Wgs84 {
+    /** in degrees */
     lng: number;
+    /** in degrees */
     lat: number;
 }
 export interface Mercator {
+    /** in meters */
     x: number;
+    /** in meters */
     y: number;
 }
 export interface Vector {
@@ -37,6 +41,10 @@ export declare class Projection {
     getWGS84TileBounds(tile: Vector, zoom: number, tileSize?: number): WGS84BoundingBox;
     /** Returns center of the given tile in WGS84 (https://epsg.io/4326) coordinates */
     getWGS84TileCenter(tile: Vector, zoom: number, tileSize?: number): Wgs84;
-    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile*/
+    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile
+     * @param tile Top-level tile to start the pyramid; will also be part of the return value
+     * @param depth How many levels the resulting pyramid will have.
+     * @return An array of tiles
+    */
     getTilePyramid(tile: Tile, depth?: number): TileList;
 }
