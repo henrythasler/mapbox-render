@@ -13,6 +13,14 @@ export interface Vector {
     y: number
 }
 
+export interface Tile {
+    z: number,
+    x: number,
+    y: number
+}
+
+export interface TileList extends Array<Tile> { }
+
 export interface WGS84BoundingBox {
     leftbottom: Wgs84,
     righttop: Wgs84
@@ -22,8 +30,8 @@ export interface MercatorBoundingBox {
     leftbottom: Mercator,
     righttop: Mercator
 }
-    
-export class Geometry {
+
+export class Projection {
     protected originShift = 2 * Math.PI * 6378137 / 2.0;
 
     /** Converts XY point from Pseudo-Mercator (https://epsg.io/3857) to WGS84 (https://epsg.io/4326) */
@@ -64,5 +72,24 @@ export class Geometry {
             lng: (bounds.righttop.lng + bounds.leftbottom.lng) / 2,
             lat: (bounds.righttop.lat + bounds.leftbottom.lat) / 2,
         } as Wgs84)
+    }
+
+    /** Return a list of zxy-Tilecoordinates `depth`-levels below the given tile*/
+    getTilePyramid(tile: Tile, depth: number = 1): TileList {
+        let list: TileList = [];
+        // list.push(tile);
+        depth = Math.max(0, depth); // do not allow negative values
+        for (let zoom = 0; zoom <= depth; zoom++) {
+            for (let y = tile.y * 2 ** zoom; y < (tile.y + 1) * 2 ** zoom; y++) {
+                for (let x = tile.x * 2 ** zoom; x < (tile.x + 1) * 2 ** zoom; x++) {
+                    list.push(<Tile>{
+                        x: x,
+                        y: y,
+                        z: tile.z + zoom
+                    })
+                }
+            }
+        }
+        return list
     }
 }

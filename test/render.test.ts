@@ -1,5 +1,5 @@
 import * as render from "../src/render";
-import { Geometry, Wgs84} from "../src/geometry";
+import { Projection, Wgs84} from "../src/projection";
 import { expect } from "chai";
 
 /** You can easily switch between jest and mocha. Just use the right import below. 
@@ -21,7 +21,7 @@ const mapboxRenderOptions: render.MapboxRenderOptions = {
     accessToken: ""
 };
 
-const geom = new Geometry();
+const geom = new Projection();
 
 describe("Render Tests", function () {
     it("load a mapbox style", function () {

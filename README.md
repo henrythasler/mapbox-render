@@ -49,7 +49,7 @@ The tests can also be run with mocha.
 
 ## References
 
-The following links have helped a great deal to understand several technical concepts.
+The following links have helped a great deal to understand several technical concepts or were just used to copy-and-paste something.
 
 ## Mapbox References
 
@@ -86,6 +86,7 @@ The following links have helped a great deal to understand several technical con
 ## Documentation References
 
 - https://typedoc.org/
+- https://shields.io/
 
 ## Geospatial References
 
