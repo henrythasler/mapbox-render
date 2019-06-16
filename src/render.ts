@@ -7,7 +7,7 @@ import * as URL from "url-parse";
 
 const asyncReadFile = util.promisify(fs.readFile);
 
-export interface MapboxRenderOptions {
+export interface Settings {
     styleUrl: string,
     accessToken?: string,
     debug?: boolean,
@@ -15,13 +15,9 @@ export interface MapboxRenderOptions {
     tilesize?: number
 }
 
-export interface RenderParameters {
-    center: number[],
-    zoom: number,
-    width: number,
-    height: number,
-    bearing?: number,
-    pitch?: number
+/** pass-thru mbgl-interface */
+export interface RenderOptions extends mbgl.RenderOptions {
+
 }
 
 enum UrlType {
@@ -41,7 +37,7 @@ interface ResolvedUrl {
 
 /** Render mapbox-gl-styles */
 export class MapboxRender {
-    protected options: MapboxRenderOptions;
+    protected options: Settings;
     protected style: string = "";
     protected map: mbgl.Map;
 
@@ -117,7 +113,7 @@ export class MapboxRender {
      * @constructor
      * @param options General options used to create the instance
      */
-    constructor(options: MapboxRenderOptions) {
+    constructor(options: Settings) {
         this.options = options;
         this.mapOptions = { ...this.mapOptions, ...{ ratio: this.options.ratio || 1.0 } }
         this.map = new mbgl.Map(this.mapOptions);
@@ -245,7 +241,7 @@ export class MapboxRender {
         }
     }
 
-    async renderToFile(param: RenderParameters, outputFile: string): Promise<boolean | Error> {
+    async renderToFile(param: mbgl.RenderOptions, outputFile: string): Promise<boolean | Error> {
         return new Promise<boolean | Error>((resolve, reject) => {
             this.map.render(param, (err, buffer) => {
                 if (err) {
@@ -271,7 +267,7 @@ export class MapboxRender {
         });
     }
 
-    async renderToImage(param: RenderParameters): Promise<sharp.Sharp | Error> {
+    async renderToImage(param: mbgl.RenderOptions): Promise<sharp.Sharp | Error> {
         return new Promise<sharp.Sharp | Error>((resolve, reject) => {
             this.map.render(param, (err, buffer) => {
                 if (err) {

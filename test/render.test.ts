@@ -15,7 +15,7 @@ import pixelmatch = require('pixelmatch');
 const testAssetsPath = "test/assets/";
 const testOutputPath = "test/out/";
 
-const mapboxRenderOptions: render.MapboxRenderOptions = {
+const settings: render.Settings = {
     styleUrl: "test/assets/background-only.style.json",
     debug: false,
     accessToken: ""
@@ -25,21 +25,21 @@ const proj = new Projection();
 
 describe("Render Tests", function () {
     it("load a mapbox style", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
         return mbr.loadStyle("test/assets/background-only.style.json")
     });
 
     it("render background", async function () {
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [0, 0],
             zoom: 0,
             width: 256,
             height: 256
         };
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle();
-        await mbr.renderToFile(renderParam, `${testOutputPath}background-only.png`);
+        await mbr.renderToFile(options, `${testOutputPath}background-only.png`);
         let specimen = await sharp(`${testOutputPath}background-only.png`).metadata();
         expect(specimen).to.include({ "format": "png", "width": 256, "height": 256, "channels": 4 });
     });
@@ -48,16 +48,16 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [12.63427717, 47.79839469],
             zoom: 13,
             width: width,
             height: height
         };
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle("test/assets/local-file.style.json");
-        await mbr.renderToFile(renderParam, "test/out/landuse-roads-points.png");
+        await mbr.renderToFile(options, "test/out/landuse-roads-points.png");
 
         let specimen = await sharp("test/out/landuse-roads-points.png").raw().toBuffer();
         let reference = await sharp("test/assets/landuse-roads-points-golden.png").raw().toBuffer();
@@ -71,16 +71,16 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [12.63427717, 47.79839469],
             zoom: 13,
             width: width,
             height: height
         };
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle("test/assets/local-file.style.json");
-        await mbr.renderToFile(renderParam, "test/out/landuse-roads-points.png");
+        await mbr.renderToFile(options, "test/out/landuse-roads-points.png");
 
         let specimen = await sharp("test/out/landuse-roads-points.png").raw().toBuffer();
         let reference = await sharp("test/assets/landuse-roads-points-negative.png").raw().toBuffer();
@@ -94,9 +94,9 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...settings, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
         let center: Wgs84 = proj.getWGS84TileCenter({ x: 1093, y: 715 }, 11)
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [center.lng, center.lat],
             zoom: 11,
             width: width,
@@ -104,7 +104,7 @@ describe("Render Tests", function () {
         };
 
         await mbr.loadStyle(`${testAssetsPath}mapbox-ressource.style.json`);
-        await mbr.renderToFile(renderParam, `${testOutputPath}hillshading-contourlines.png`);
+        await mbr.renderToFile(options, `${testOutputPath}hillshading-contourlines.png`);
 
         let specimen = await sharp(`${testOutputPath}hillshading-contourlines.png`).raw().toBuffer();
         let reference = await sharp(`${testAssetsPath}hillshading-contourlines-golden.png`).raw().toBuffer();
@@ -118,9 +118,9 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...settings, ...{ debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
         let center: Wgs84 = proj.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [center.lng, center.lat],
             zoom: 13,
             width: width,
@@ -128,7 +128,7 @@ describe("Render Tests", function () {
         };
 
         await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
-        await mbr.renderToFile(renderParam, `${testOutputPath}text-icons.png`);
+        await mbr.renderToFile(options, `${testOutputPath}text-icons.png`);
 
         let specimen = await sharp(`${testOutputPath}text-icons.png`).raw().toBuffer();
         let reference = await sharp(`${testAssetsPath}text-icons-golden.png`).raw().toBuffer();
@@ -144,9 +144,9 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...settings, ...{ debug: false, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
         let center: Wgs84 = proj.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [center.lng, center.lat],
             zoom: 13,
             width: width,
@@ -154,7 +154,7 @@ describe("Render Tests", function () {
         };
 
         await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs-format.style.json`);
-        await mbr.renderToFile(renderParam, `${testOutputPath}text-icons-format.png`);
+        await mbr.renderToFile(options, `${testOutputPath}text-icons-format.png`);
 
         let specimen = await sharp(`${testOutputPath}text-icons-format.png`).raw().toBuffer();
         let reference = await sharp(`${testAssetsPath}text-icons-golden.png`).raw().toBuffer();
@@ -168,9 +168,9 @@ describe("Render Tests", function () {
         let width: number = 512;
         let height: number = 512;
 
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ ratio: 2, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...settings, ...{ ratio: 2, accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
         let center: Wgs84 = proj.getWGS84TileCenter({ x: 4383, y: 2854 }, 13)
-        let renderParam: render.RenderParameters = {
+        let options: render.RenderOptions = {
             center: [center.lng, center.lat],
             zoom: 13,
             width: width,
@@ -178,7 +178,7 @@ describe("Render Tests", function () {
         };
 
         await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
-        await mbr.renderToFile(renderParam, `${testOutputPath}text-icons@2.png`);
+        await mbr.renderToFile(options, `${testOutputPath}text-icons@2.png`);
 
         let specimen = await sharp(`${testOutputPath}text-icons@2.png`).raw().toBuffer();
         let reference = await sharp(`${testAssetsPath}text-icons@2-golden.png`).raw().toBuffer();
@@ -192,14 +192,14 @@ describe("Render Tests", function () {
 
 
 describe('Error handling tests', function () {
-    let renderParam: render.RenderParameters = {
+    let options: render.RenderOptions = {
         center: [12.63427717, 47.79839469],
         zoom: 13,
         width: 256,
         height: 256
     };
     it("Try to load a NOT existing style", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         return mbr.loadStyle("this-file-does-not-exist.json")
             .catch((e) => {
@@ -211,7 +211,7 @@ describe('Error handling tests', function () {
     });
 
     it("Try to load a corrupted style", function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         return mbr.loadStyle("test/assets/this-is-not-a-style.json")
             .catch((e) => {
@@ -221,11 +221,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to save image to invalid location", async function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle("test/assets/local-file.style.json");
         try {
-            await mbr.renderToFile(renderParam, "test/not-existing/not-existing.png");
+            await mbr.renderToFile(options, "test/not-existing/not-existing.png");
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -235,11 +235,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try url that does not exist", async function () {
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
+        let mbr = new render.MapboxRender({ ...settings, ...{ accessToken: "pk.eyJ1IjoibXljeWNsZW1hcCIsImEiOiJjaXJhYnoxcGEwMDRxaTlubnk3cGZpbTBmIn0.TEO9UhyyX1nFKDTwO4K1xg" } });
 
         await mbr.loadStyle(`${testAssetsPath}url-not-found.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -249,11 +249,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to use an invalid mapbox-token", async function () {
-        let mbr = new render.MapboxRender({ ...mapboxRenderOptions, ...{ accessToken: "pk.xxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxx" } });
+        let mbr = new render.MapboxRender({ ...settings, ...{ accessToken: "pk.xxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxx" } });
 
         await mbr.loadStyle(`${testAssetsPath}mapbox-fonts-glyphs.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -263,11 +263,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to read empty remote content", async function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle(`${testAssetsPath}http-empty-response.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -277,11 +277,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to use unknown protocol for source", async function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle(`${testAssetsPath}protocol-error.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -290,11 +290,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to read non-existing local file", async function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle(`${testAssetsPath}local-file-not-found.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -303,11 +303,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to use empty url", async function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle(`${testAssetsPath}url-empty.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
@@ -316,11 +316,11 @@ describe('Error handling tests', function () {
     });
 
     it("Try to connect to unknown remote port", async function () {
-        let mbr = new render.MapboxRender(mapboxRenderOptions);
+        let mbr = new render.MapboxRender(settings);
 
         await mbr.loadStyle(`${testAssetsPath}host-not-found.style.json`);
         try {
-            await mbr.renderToFile(renderParam, `${testOutputPath}dummy.png`);
+            await mbr.renderToFile(options, `${testOutputPath}dummy.png`);
         }
         catch (e) {
             expect(e).to.be.an("Error");
