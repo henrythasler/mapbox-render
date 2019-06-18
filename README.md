@@ -1,3 +1,5 @@
+![build status](https://codebuild.eu-central-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiNWNEcjBuVUtSY0JWM1gwclRTZjZXSlE5VVBheUxsQXlVQ3c0WHhTNkpxNkROYlBPRVpnUDlMNEhOVkV3RGY2ZXUvN3BzamM4YVhOLy9ZYW1weWs0cHg4PSIsIml2UGFyYW1ldGVyU3BlYyI6IkhEbndFSnhYOVR3aEdKMXIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+
 # Mapbox-Render
 
 This is a Typescript implementation based on mapbox-gl-native to create raster images from any mapbox-gl-style. 
