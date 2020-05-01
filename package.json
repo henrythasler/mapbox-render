@@ -13,7 +13,9 @@
     "test:mocha": "mocha --exit --reporter spec -r ts-node/register test/**/render.test.ts",
     "test": "jest --coverage",
     "docs": "node node_modules/typedoc/bin/typedoc",
-    "benchmark": "tsc test/projection.benchmark.ts && node test/projection.benchmark.js"
+    "benchmark": "tsc test/projection.benchmark.ts && node test/projection.benchmark.js",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "bin": {},
   "dependencies": {
@@ -21,7 +23,8 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "sharp": "^0.22.0",
-    "url-parse": "^1.4.3"
+    "url-parse": "^1.4.3",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@babel/types": "^7.4.4",
@@ -43,5 +46,6 @@
     "typedoc": "^0.14.2",
     "typescript": "^3.4.5"
   },
-  "repository": "https://github.com/henrythasler/mapbox-render"
+  "repository": "https://github.com/henrythasler/mapbox-render",
+  "snyk": true
 }
